@@ -1,0 +1,215 @@
+{
+    "version": "7",
+    "name": "RentACar Backend",
+    "description": "RESTful API für Autovermietungssystem mit Spring Boot - Domain-Driven Design",
+    "context": {
+        "project": {
+            "type": "backend",
+            "framework": "Spring Boot 3.3.5",
+            "language": "Java 21",
+            "database": "PostgreSQL 16",
+            "architecture": "Modular Monolith (DDD)",
+            "build_tool": "Maven 3.9+"
+        },
+        "modules": [
+            {
+                "name": "inventory",
+                "path": "src/main/java/com/rentacar/inventory",
+                "description": "Fahrzeug- und Standortverwaltung",
+                "entities": [
+                    "Vehicle",
+                    "Branch"
+                ],
+                "services": [
+                    "VehicleService",
+                    "BranchService"
+                ],
+                "controllers": [
+                    "InventoryController",
+                    "BranchController"
+                ],
+                "apis": [
+                    "POST /api/v1/inventory/vehicles - Fahrzeug anlegen",
+                    "PATCH /api/v1/inventory/vehicles/{id}/status - Status aktualisieren",
+                    "POST /api/v1/branches - Standort anlegen",
+                    "GET /api/v1/branches - Alle Standorte abrufen",
+                    "GET /api/v1/branches/{id} - Standort abrufen"
+                ]
+            },
+            {
+                "name": "customer",
+                "path": "src/main/java/com/rentacar/customer",
+                "description": "Kundenverwaltung mit AES-256 Datenverschlüsselung",
+                "entities": [
+                    "Customer"
+                ],
+                "services": [
+                    "CustomerService"
+                ],
+                "controllers": [
+                    "CustomerController"
+                ],
+                "security_features": [
+                    "AttributeEncryptor für driverLicense und address"
+                ],
+                "apis": [
+                    "POST /api/v1/customers - Kunde anlegen (öffentlich)",
+                    "GET /api/v1/customers/{id} - Kunde abrufen",
+                    "GET /api/v1/customers/by-email/{email} - Kunde per E-Mail suchen",
+                    "GET /api/v1/customers/by-number/{customerNumber} - Kunde per Kundennummer suchen"
+                ]
+            },
+            {
+                "name": "booking",
+                "path": "src/main/java/com/rentacar/booking",
+                "description": "Buchungsverwaltung mit Preisberechnung und Race-Condition-Schutz",
+                "entities": [
+                    "Booking",
+                    "PriceConfiguration"
+                ],
+                "services": [
+                    "BookingService"
+                ],
+                "controllers": [
+                    "BookingController"
+                ],
+                "business_rules": [
+                    "24h Stornierungsfrist",
+                    "Automatische Preisberechnung basierend auf Fahrzeugtyp",
+                    "Race-Condition-Schutz bei Buchungserstellung"
+                ],
+                "apis": [
+                    "GET /api/v1/bookings/search - Verfügbare Fahrzeuge suchen",
+                    "POST /api/v1/bookings - Buchung erstellen",
+                    "DELETE /api/v1/bookings/{id} - Buchung stornieren"
+                ]
+            },
+            {
+                "name": "rental",
+                "path": "src/main/java/com/rentacar/rental",
+                "description": "Vermietungsprozesse: Check-out und Check-in mit Schadenserfassung",
+                "entities": [
+                    "HandoverProtocol",
+                    "AuditLog"
+                ],
+                "services": [
+                    "RentalService"
+                ],
+                "controllers": [
+                    "RentalController"
+                ],
+                "business_rules": [
+                    "Übergabeprotokoll bei Check-out und Check-in",
+                    "Schadenserfassung und Zusatzkostenberechnung",
+                    "Automatische Statusaktualisierung"
+                ],
+                "apis": [
+                    "POST /api/v1/rentals/checkout - Fahrzeug übergeben",
+                    "POST /api/v1/rentals/checkin - Fahrzeug zurücknehmen"
+                ]
+            }
+        ],
+        "infrastructure": {
+            "security": {
+                "authentication": "HTTP Basic (In-Memory für Development)",
+                "roles": [
+                    "CUSTOMER",
+                    "EMPLOYEE",
+                    "ADMIN"
+                ],
+                "encryption": "AES-256 für sensible Kundendaten (driverLicense, address)",
+                "config_class": "SecurityConfig"
+            },
+            "audit": {
+                "mechanism": "Event-Driven (Spring Events)",
+                "async": true,
+                "entities": [
+                    "AuditLog",
+                    "AuditLogEvent",
+                    "AuditLogListener"
+                ],
+                "config_class": "AsyncConfig"
+            },
+            "exception_handling": {
+                "global_handler": "GlobalExceptionHandler",
+                "features": [
+                    "Zentrale Fehlerbehandlung",
+                    "Validierungsfehler-Handling"
+                ]
+            }
+        },
+        "testing": {
+            "unit_tests": {
+                "framework": "JUnit 5 + Mockito",
+                "tests": [
+                    "BookingServiceTest (6 Tests)",
+                    "CustomerServiceTest (5 Tests)",
+                    "VehicleServiceTest (7 Tests)"
+                ],
+                "total": "18 Tests, alle erfolgreich"
+            },
+            "integration_tests": {
+                "framework": "Testcontainers + PostgreSQL",
+                "test_class": "RentACarApplicationTests",
+                "coverage": "Vollständiger Workflow: Vehicle → Search → Booking → Checkout → Checkin"
+            },
+            "coverage_target": "80%"
+        },
+        "key_patterns": [
+            "Domain-Driven Design (DDD) - Rich Domain Models",
+            "Repository Pattern - Datenzugriff",
+            "Event-Driven Architecture - Audit Logging",
+            "Optimistic Locking (@Version) - Concurrency Control",
+            "DTO Pattern - API Layer Separation"
+        ],
+        "database": {
+            "type": "PostgreSQL 16",
+            "orm": "JPA/Hibernate",
+            "ddl_auto": "update",
+            "connection": {
+                "url": "jdbc:postgresql://localhost:5432/rentacar",
+                "user": "postgres",
+                "password": "password"
+            },
+            "docker_compose": "compose.yaml"
+        }
+    },
+    "important_files": [
+        "src/main/resources/application.yml - Spring Boot Konfiguration",
+        "compose.yaml - PostgreSQL Docker Container",
+        "pom.xml - Maven Dependencies",
+        "src/main/java/com/rentacar/infrastructure/security/SecurityConfig.java - Security Setup",
+        "src/main/java/com/rentacar/infrastructure/audit/AuditLogListener.java - Audit Logging"
+    ],
+    "conventions": {
+        "language": "German (Kommentare, Dokumentation, Domain-Begriffe)",
+        "code_style": "English technical terms, German business terms",
+        "api_versioning": "/api/v1/",
+        "naming": {
+            "entities": "German business terms (Buchung, Kunde, Fahrzeug)",
+            "technical": "English (Service, Repository, Controller)",
+            "enums": "UPPERCASE_GERMAN"
+        },
+        "package_structure": "com.rentacar.<module>.<layer>"
+    },
+    "development": {
+        "run_command": "mvn spring-boot:run",
+        "test_command": "mvn test",
+        "build_command": "mvn clean package",
+        "java_version": "21",
+        "port": "8080",
+        "swagger_ui": "http://localhost:8080/swagger-ui.html"
+    },
+    "known_limitations": [
+        "Encryption Key ist hardcoded (für Production: Vault/Secrets Manager)",
+        "In-Memory Authentication (für Production: DB-basiert oder JWT)",
+        "Preiskonfiguration muss manuell in DB angelegt werden"
+    ],
+    "next_steps": [
+        "Preiskonfigurations-Controller implementieren",
+        "Weitere Unit-Tests für Controller",
+        "JWT-basierte Authentifizierung",
+        "API-Versionierung",
+        "Pagination für Suchergebnisse"
+    ]
+}

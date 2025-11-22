@@ -1,0 +1,90 @@
+# RentACar Backend - MCP Context 7
+
+## 🎯 Projekt-Übersicht
+- **Framework**: Spring Boot 3.3.5
+- **Sprache**: Java 21
+- **Datenbank**: PostgreSQL 16
+- **Architektur**: Modular Monolith (DDD)
+- **Build**: Maven 3.9+
+
+## 📦 Module
+
+### 1. Inventory (Fahrzeuge & Standorte)
+- **Entities**: `Vehicle`, `Branch`
+- **Services**: `VehicleService`, `BranchService`
+- **Features**: Optimistic Locking, Verfügbarkeitssuche
+- **APIs**: `/api/v1/inventory`, `/api/v1/branches`
+
+### 2. Customer (Kundenverwaltung)
+- **Entities**: `Customer`
+- **Services**: `CustomerService`
+- **Security**: AES-256 Verschlüsselung (driverLicense, address)
+- **APIs**: `/api/v1/customers`
+
+### 3. Booking (Buchungen)
+- **Entities**: `Booking`, `PriceConfiguration`
+- **Services**: `BookingService`
+- **Features**: Race-Condition-Schutz, 24h Stornierungsfrist
+- **APIs**: `/api/v1/bookings`
+
+### 4. Rental (Vermietung)
+- **Entities**: `HandoverProtocol`, `AuditLog`
+- **Services**: `RentalService`
+- **Features**: Check-out/Check-in, Schadenserfassung
+- **APIs**: `/api/v1/rentals`
+
+## 🔒 Sicherheit
+- **Authentication**: HTTP Basic (In-Memory)
+- **Rollen**: CUSTOMER, EMPLOYEE, ADMIN
+- **Verschlüsselung**: AES-256 für Kundendaten
+- **Audit**: Event-Driven Logging (asynchron)
+
+## 🧪 Testing
+- **Unit-Tests**: 18 Tests (JUnit 5 + Mockito)
+  - BookingServiceTest (6)
+  - CustomerServiceTest (5)
+  - VehicleServiceTest (7)
+- **Integration-Tests**: Testcontainers + PostgreSQL
+- **Ziel**: >80% Coverage
+
+## 🏗️ Wichtige Patterns
+- Domain-Driven Design (DDD)
+- Repository Pattern
+- Event-Driven Audit Logging
+- Optimistic Locking (@Version)
+- DTO Pattern für API Layer
+
+## 🚀 Entwicklung
+```bash
+# Datenbank starten
+docker compose up -d
+
+# Anwendung starten
+export JAVA_HOME=$(/usr/libexec/java_home -v 21)
+mvn spring-boot:run
+
+# Tests ausführen
+mvn test
+
+# Swagger UI
+open http://localhost:8080/swagger-ui.html
+```
+
+## 📝 Konventionen
+- **Sprache**: Deutsch (Kommentare, Doku, Domain-Begriffe)
+- **Code**: English technical terms, German business terms
+- **API**: `/api/v1/` Versionierung
+- **Naming**: 
+  - Entities: German (Buchung, Kunde, Fahrzeug)
+  - Technical: English (Service, Repository, Controller)
+
+## ⚠️ Bekannte Einschränkungen
+1. Encryption Key ist hardcoded
+2. In-Memory Authentication
+3. Preiskonfiguration muss manuell in DB angelegt werden
+
+## 🔜 Nächste Schritte
+- Preiskonfigurations-Controller
+- Weitere Controller Unit-Tests
+- JWT Authentication
+- API Pagination

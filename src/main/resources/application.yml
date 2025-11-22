@@ -1,0 +1,47 @@
+spring:
+  application:
+    name: RentACar
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:rentacar}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:password}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+# Sicherheitskonfiguration
+app:
+  security:
+    encryption:
+      # AES-256 Key (Base64-kodiert, 32 Bytes)
+      # WICHTIG: In Produktion aus Secrets Manager laden!
+      key: ${ENCRYPTION_KEY:dGVzdC1lbmNyeXB0aW9uLWtleS0zMi1ieXRlcw==}
+    jwt:
+      # JWT Secret (Base64-kodiert, mindestens 256 Bit)
+      # WICHTIG: In Produktion aus Secrets Manager laden!
+      secret: ${JWT_SECRET:dGVzdC1qd3Qtc2VjcmV0LWtleS1mb3ItcmVudGFjYXItYXBwbGljYXRpb24tMjU2LWJpdA==}
+      # Token-Gültigkeit: 24 Stunden (in Millisekunden)
+      expiration: ${JWT_EXPIRATION:86400000}
+  docker:
+    compose:
+      enabled: false
+
+logging:
+  level:
+    org.springframework.web: INFO
+    com.rentacar: DEBUG
+
+# Actuator Endpoints für Monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
