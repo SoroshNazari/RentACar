@@ -16,6 +16,13 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+/**
+ * Domain-Klasse für Booking.
+ * 
+ * @author RentACar Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class Booking {
 
     @Id

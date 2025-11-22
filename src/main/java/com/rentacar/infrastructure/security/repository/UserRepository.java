@@ -11,6 +11,13 @@ import java.util.UUID;
  * Repository für User-Entity.
  */
 @Repository
+/**
+ * Repository-Interface für Datenbankzugriff.
+ * 
+ * @author RentACar Team
+ * @version 1.0
+ * @since 1.0
+ */
 public interface UserRepository extends JpaRepository<User, UUID> {
 
     Optional<User> findByUsername(String username);

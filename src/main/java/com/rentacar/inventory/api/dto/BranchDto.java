@@ -5,6 +5,13 @@ import lombok.Data;
 
 import java.util.UUID;
 
+/**
+ * Data Transfer Object.
+ * 
+ * @author RentACar Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class BranchDto {
 
     @Data

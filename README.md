@@ -12,11 +12,10 @@ RentACar ist ein vollständiges Backend-System für eine Autovermietung, entwick
 - ✅ **Vermietungsprozess** - Check-out/Check-in mit Übergabeprotokollen
 - ✅ **JWT-Authentifizierung** - Sichere Authentifizierung und Autorisierung
 - ✅ **Email-Benachrichtigungen** - Automatische HTML-Emails für Buchungen
-- ✅ **File Upload** - Fahrzeugbilder mit S3-Integration
+- ✅ **File Upload** - Fahrzeugbilder mit Mock-Storage
 - ✅ **Reporting Dashboard** - Echtzeit-Statistiken und Reports
 - ✅ **Multi-Tenancy** - Unterstützung für mehrere Mandanten
 - ✅ **Rate Limiting** - Schutz vor API-Missbrauch
-- ✅ **Database Migrations** - Versionierte Schema-Verwaltung mit Flyway
 
 ---
 
@@ -47,8 +46,7 @@ src/main/java/com/rentacar/
 
 - **Java 21**
 - **Maven 3.8+**
-- **PostgreSQL 16**
-- **Docker** (optional, für PostgreSQL)
+- **H2 Database** (eingebettet, keine Installation nötig)
 
 ### 🤝 Für das Team (Clone & Run)
 
@@ -56,14 +54,10 @@ Das Projekt ist so konfiguriert, dass ihr es **ohne Konfiguration** direkt start
 Es werden automatisch Standard-Werte verwendet, sodass niemand Variablen ändern muss.
 
 **Standard-Konfiguration (automatisch aktiv):**
-- **Datenbank**: `localhost:5432/rentacar`
-- **User**: `postgres`
-- **Passwort**: `password`
-- **Secrets**: Entwicklungs-Keys sind bereits hinterlegt.
-
-**Nur falls nötig** (z.B. anderes DB-Passwort):
-Ihr müsst den Code **nicht** ändern! Setzt einfach eine Environment Variable in eurer IDE oder im Terminal:
-`DB_PASSWORD=mein_passwort`
+- **Datenbank**: H2 (dateibasiert in `./data/rentacar.mv.db`)
+- **Daten bleiben erhalten** nach Neustart
+- **H2-Console**: `http://localhost:8080/h2-console`
+- **Secrets**: Entwicklungs-Keys sind bereits hinterlegt
 
 ### Installation
 
@@ -73,31 +67,15 @@ git clone <repository-url>
 cd RentACar
 ```
 
-2. **Datenbank starten**
-Stelle sicher, dass du eine lokale PostgreSQL-Datenbank installiert hast:
-- **Datenbank-Name**: `rentacar`
-- **User**: `postgres`
-- **Passwort**: `password`
+2. **Datenbank** (automatisch)
+Die H2-Datenbank wird automatisch erstellt. Keine Installation nötig!
 
-*Alternativ (falls Docker vorhanden):*
+3. **Anwendung starten**
 ```bash
-docker run --name rentacar-db -e POSTGRES_DB=rentacar -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=password -p 5432:5432 -d postgres:16
-```
-
-3. **Environment Variables konfigurieren**
-```bash
-cp .env.example .env
-# .env Datei bearbeiten und Werte anpassen
-```
-
-4. **Anwendung starten**
-```bash
-# Development
-export SPRING_PROFILES_ACTIVE=dev
+# Anwendung starten
 mvn spring-boot:run
 
-# Production
-export SPRING_PROFILES_ACTIVE=prod
+# Production Build
 mvn clean package
 java -jar target/RentACar-0.0.1-SNAPSHOT.jar
 ```
@@ -277,18 +255,18 @@ curl -H "X-Tenant-ID: company-b" http://localhost:8080/api/v1/vehicles
 
 ## 🗄️ Datenbank
 
-### Flyway Migrations
+### H2 Database
 
-Alle Datenbankänderungen werden versioniert mit Flyway:
+**Standard-Konfiguration:**
+- **Typ**: Dateibasiert (Daten bleiben erhalten)
+- **Speicherort**: `./data/rentacar.mv.db`
+- **H2-Console**: http://localhost:8080/h2-console
+  - JDBC URL: `jdbc:h2:file:./data/rentacar`
+  - Username: `sa`
+  - Password: (leer)
 
-- **V1**: Basis-Tabellen (Branches, Vehicles, Customers, Bookings, etc.)
-- **V2**: Users-Tabelle für JWT-Authentifizierung
-- **V3**: Vehicle Images-Tabelle
-- **V4**: Tenant-ID Spalten für Multi-Tenancy
-
-### Schema
-
-Siehe `src/main/resources/db/migration/` für alle Migrationen.
+**Schema-Verwaltung:**
+Hibernate erstellt das Schema automatisch (`ddl-auto: create-drop`).
 
 ---
 

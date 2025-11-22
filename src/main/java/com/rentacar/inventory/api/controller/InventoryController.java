@@ -18,6 +18,13 @@ import java.util.UUID;
 @RequestMapping("/api/v1/inventory/vehicles")
 @RequiredArgsConstructor
 @Tag(name = "Inventory", description = "Vehicle Management API")
+/**
+ * REST Controller für inventory-Verwaltung.
+ * 
+ * @author RentACar Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class InventoryController {
 
     private final VehicleService vehicleService;

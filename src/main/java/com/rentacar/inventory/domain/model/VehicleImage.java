@@ -15,6 +15,13 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+/**
+ * Domain-Klasse für VehicleImage.
+ * 
+ * @author RentACar Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class VehicleImage {
 
     @Id

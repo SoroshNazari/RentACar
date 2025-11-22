@@ -14,6 +14,13 @@ import org.springframework.context.annotation.Configuration;
  * OpenAPI/Swagger-Konfiguration mit JWT-Support.
  */
 @Configuration
+/**
+ * Konfigurationsklasse.
+ * 
+ * @author RentACar Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class OpenApiConfig {
 
     @Bean

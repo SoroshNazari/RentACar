@@ -16,6 +16,13 @@ import java.util.UUID;
 @RequestMapping("/api/v1/customers")
 @RequiredArgsConstructor
 @Tag(name = "Customer", description = "Customer Management API")
+/**
+ * REST Controller für customer-Verwaltung.
+ * 
+ * @author RentACar Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class CustomerController {
 
     private final CustomerService customerService;

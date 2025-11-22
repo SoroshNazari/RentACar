@@ -24,6 +24,13 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+/**
+ * Service-Klasse für Business-Logik.
+ * 
+ * @author RentACar Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class BookingService {
 
     private final BookingRepository bookingRepository;
@@ -33,7 +40,7 @@ public class BookingService {
 
     @Transactional(readOnly = true)
     public List<Vehicle> searchVehicles(LocalDateTime from, LocalDateTime to, VehicleType type) {
-        List<UUID> bookedVehicleIds = bookingRepository.findBookedVehicleIds(from, to);
+        List<UUID> bookedVehicleIds = bookingRepository.findBookedVehicleIds(BookingStatus.BESTAETIGT, from, to);
         return vehicleService.findAvailableVehicles(type, bookedVehicleIds);
     }
 
@@ -41,7 +48,7 @@ public class BookingService {
     public Booking createBooking(UUID customerId, UUID vehicleId, UUID pickupBranchId, UUID returnBranchId,
             LocalDateTime start, LocalDateTime end) {
         // 1. Validate availability (Race Condition Check)
-        List<UUID> bookedVehicleIds = bookingRepository.findBookedVehicleIds(start, end);
+        List<UUID> bookedVehicleIds = bookingRepository.findBookedVehicleIds(BookingStatus.BESTAETIGT, start, end);
         if (bookedVehicleIds.contains(vehicleId)) {
             throw new IllegalStateException("Vehicle is not available for the selected period.");
         }

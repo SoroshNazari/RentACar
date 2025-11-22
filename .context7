@@ -3,7 +3,7 @@
 ## 🎯 Projekt-Übersicht
 - **Framework**: Spring Boot 3.3.5
 - **Sprache**: Java 21
-- **Datenbank**: PostgreSQL 16
+- **Datenbank**: H2 (dateibasiert)
 - **Architektur**: Modular Monolith (DDD)
 - **Build**: Maven 3.9+
 
@@ -56,15 +56,15 @@
 
 ## 🚀 Entwicklung
 ```bash
-# Datenbank starten
-docker compose up -d
-
 # Anwendung starten
-export JAVA_HOME=$(/usr/libexec/java_home -v 21)
 mvn spring-boot:run
 
 # Tests ausführen
 mvn test
+
+# H2-Console
+open http://localhost:8080/h2-console
+# JDBC URL: jdbc:h2:file:./data/rentacar
 
 # Swagger UI
 open http://localhost:8080/swagger-ui.html

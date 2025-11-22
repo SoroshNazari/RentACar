@@ -16,6 +16,13 @@ import java.util.Base64;
  */
 @Converter
 @Component
+/**
+ * Domain-Klasse für AttributeEncryptor.
+ * 
+ * @author RentACar Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class AttributeEncryptor implements AttributeConverter<String, String> {
 
     private static final String ALGORITHM = "AES";

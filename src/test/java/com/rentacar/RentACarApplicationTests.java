@@ -21,9 +21,6 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -33,24 +30,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
+/**
+ * Integration Test für den vollständigen Workflow mit H2-Datenbank.
+ * Testet: Vehicle → Search → Booking → Checkout → Checkin
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
-@Testcontainers
-@Disabled("Docker not available")
 class RentACarApplicationTests {
-
-        @Container
-        static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16")
-                        .withDatabaseName("testdb")
-                        .withUsername("test")
-                        .withPassword("test");
-
-        @DynamicPropertySource
-        static void configureProperties(DynamicPropertyRegistry registry) {
-                registry.add("spring.datasource.url", postgres::getJdbcUrl);
-                registry.add("spring.datasource.username", postgres::getUsername);
-                registry.add("spring.datasource.password", postgres::getPassword);
-        }
 
         @Autowired
         private MockMvc mockMvc;

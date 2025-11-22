@@ -18,6 +18,13 @@ import java.util.UUID;
  */
 @Slf4j
 @Service
+/**
+ * Service-Klasse für Business-Logik.
+ * 
+ * @author RentACar Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class FileStorageService {
 
     private final Path fileStorageLocation;

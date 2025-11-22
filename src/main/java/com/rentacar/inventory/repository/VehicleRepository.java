@@ -14,19 +14,26 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
+/**
+ * Repository-Interface für Datenbankzugriff.
+ * 
+ * @author RentACar Team
+ * @version 1.0
+ * @since 1.0
+ */
 public interface VehicleRepository extends JpaRepository<Vehicle, UUID> {
         List<Vehicle> findByStatus(VehicleStatus status);
 
         List<Vehicle> findByTypeAndStatus(VehicleType type, VehicleStatus status);
 
-        List<Vehicle> findByBranchId(UUID branchId);
+        List<Vehicle> findByLocationId(UUID locationId);
 
         Long countByStatus(VehicleStatus status);
 
         Optional<Vehicle> findByLicensePlate(String licensePlate);
 
-        List<Vehicle> findByVehicleTypeAndStatusAndBranchId(VehicleType vehicleType, VehicleStatus status,
-                        UUID branchId);
+        List<Vehicle> findByTypeAndStatusAndLocationId(VehicleType type, VehicleStatus status,
+                        UUID locationId);
 
         @Query("SELECT v FROM Vehicle v WHERE v.type = :type AND v.status = :status AND v.id NOT IN :excludedIds")
         List<Vehicle> findAvailableVehicles(@Param("type") VehicleType type,

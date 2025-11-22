@@ -15,6 +15,13 @@ import java.math.BigDecimal;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+/**
+ * Konfigurationsklasse.
+ * 
+ * @author RentACar Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class PriceConfiguration {
 
     @Id

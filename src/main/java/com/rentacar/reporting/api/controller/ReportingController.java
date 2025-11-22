@@ -17,6 +17,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/reports")
 @RequiredArgsConstructor
 @Tag(name = "Reports", description = "Reporting and Statistics API")
+/**
+ * REST Controller für reporting-Verwaltung.
+ * 
+ * @author RentACar Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class ReportingController {
 
     private final ReportingService reportingService;

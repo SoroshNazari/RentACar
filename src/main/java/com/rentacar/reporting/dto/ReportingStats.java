@@ -14,6 +14,13 @@ import java.math.BigDecimal;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+/**
+ * Domain-Klasse für ReportingStats.
+ * 
+ * @author RentACar Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class ReportingStats {
 
     // Vehicle Statistics

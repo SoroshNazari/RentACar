@@ -16,6 +16,13 @@ import java.io.IOException;
  */
 @Slf4j
 @Component
+/**
+ * Domain-Klasse für TenantFilter.
+ * 
+ * @author RentACar Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class TenantFilter extends OncePerRequestFilter {
 
     private static final String TENANT_HEADER = "X-Tenant-ID";

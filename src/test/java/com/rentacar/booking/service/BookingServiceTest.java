@@ -74,7 +74,7 @@ class BookingServiceTest {
         LocalDateTime start = LocalDateTime.now().plusDays(1);
         LocalDateTime end = LocalDateTime.now().plusDays(3);
 
-        when(bookingRepository.findBookedVehicleIds(start, end)).thenReturn(List.of());
+        when(bookingRepository.findBookedVehicleIds(BookingStatus.BESTAETIGT, start, end)).thenReturn(List.of());
         when(vehicleService.getVehicle(vehicleId)).thenReturn(vehicle);
         when(priceConfigurationRepository.findById(VehicleType.LIMOUSINE))
                 .thenReturn(Optional.of(priceConfig));
@@ -97,7 +97,8 @@ class BookingServiceTest {
         LocalDateTime start = LocalDateTime.now().plusDays(1);
         LocalDateTime end = LocalDateTime.now().plusDays(3);
 
-        when(bookingRepository.findBookedVehicleIds(start, end)).thenReturn(List.of(vehicleId));
+        when(bookingRepository.findBookedVehicleIds(BookingStatus.BESTAETIGT, start, end))
+                .thenReturn(List.of(vehicleId));
 
         // Act & Assert
         assertThrows(IllegalStateException.class,
@@ -111,7 +112,7 @@ class BookingServiceTest {
         LocalDateTime start = LocalDateTime.now().plusDays(1);
         LocalDateTime end = LocalDateTime.now().plusDays(3);
 
-        when(bookingRepository.findBookedVehicleIds(start, end)).thenReturn(List.of());
+        when(bookingRepository.findBookedVehicleIds(BookingStatus.BESTAETIGT, start, end)).thenReturn(List.of());
         when(vehicleService.getVehicle(vehicleId)).thenReturn(vehicle);
         when(priceConfigurationRepository.findById(VehicleType.LIMOUSINE))
                 .thenReturn(Optional.empty());

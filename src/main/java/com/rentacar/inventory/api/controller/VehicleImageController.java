@@ -31,6 +31,13 @@ import java.util.UUID;
 @RequestMapping("/api/v1/vehicles/{vehicleId}/images")
 @RequiredArgsConstructor
 @Tag(name = "Vehicle Images", description = "Vehicle Image Management API")
+/**
+ * REST Controller für inventory-Verwaltung.
+ * 
+ * @author RentACar Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class VehicleImageController {
 
     private final StorageService storageService;

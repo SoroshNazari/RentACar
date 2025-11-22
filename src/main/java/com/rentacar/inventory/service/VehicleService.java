@@ -15,6 +15,13 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+/**
+ * Service-Klasse für Business-Logik.
+ * 
+ * @author RentACar Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class VehicleService {
 
     private final VehicleRepository vehicleRepository;

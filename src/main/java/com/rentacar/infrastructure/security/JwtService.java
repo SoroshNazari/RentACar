@@ -19,6 +19,13 @@ import java.util.function.Function;
  * Service für JWT Token-Generierung und -Validierung.
  */
 @Service
+/**
+ * Service-Klasse für Business-Logik.
+ * 
+ * @author RentACar Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class JwtService {
 
     @Value("${app.security.jwt.secret}")

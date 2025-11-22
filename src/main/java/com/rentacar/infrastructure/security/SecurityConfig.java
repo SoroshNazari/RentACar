@@ -30,6 +30,13 @@ import java.util.Arrays;
 @EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
+/**
+ * Konfigurationsklasse.
+ * 
+ * @author RentACar Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class SecurityConfig {
 
         private final JwtAuthenticationFilter jwtAuthFilter;

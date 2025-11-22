@@ -23,6 +23,13 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Slf4j
 @Component
+/**
+ * Domain-Klasse für RateLimitFilter.
+ * 
+ * @author RentACar Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class RateLimitFilter extends OncePerRequestFilter {
 
     private final Map<String, Bucket> cache = new ConcurrentHashMap<>();

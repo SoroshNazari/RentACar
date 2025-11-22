@@ -10,6 +10,13 @@ import java.util.UUID;
  */
 @Data
 @AllArgsConstructor
+/**
+ * Domain Event.
+ * 
+ * @author RentACar Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class BookingCancelledEvent {
     private UUID bookingId;
     private UUID customerId;

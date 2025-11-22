@@ -12,6 +12,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
+/**
+ * Event Listener.
+ * 
+ * @author RentACar Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class AuditLogListener {
 
     private final AuditLogRepository auditLogRepository;

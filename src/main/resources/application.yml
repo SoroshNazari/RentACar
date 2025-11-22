@@ -1,18 +1,37 @@
 spring:
   application:
     name: RentACar
+  # H2 als Standard-Datenbank (dateibasiert - Daten bleiben erhalten)
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:rentacar}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:password}
-    driver-class-name: org.postgresql.Driver
+    url: jdbc:h2:file:./data/rentacar;AUTO_SERVER=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
     show-sql: true
     properties:
       hibernate:
         format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+  flyway:
+    enabled: false
+  mail:
+    host: localhost
+    port: 1025
+    username: test
+    password: test
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
 
 # Sicherheitskonfiguration
 app:
@@ -30,6 +49,9 @@ app:
   docker:
     compose:
       enabled: false
+  # Mock-Services für Entwicklung
+  mock:
+    storage: true
 
 logging:
   level:

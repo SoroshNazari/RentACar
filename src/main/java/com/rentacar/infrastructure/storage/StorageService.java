@@ -10,6 +10,13 @@ import java.time.Duration;
  * Implementierungen können lokales Dateisystem oder Cloud-Storage (S3, Azure
  * Blob, etc.) sein.
  */
+/**
+ * Service-Klasse für Business-Logik.
+ * 
+ * @author RentACar Team
+ * @version 1.0
+ * @since 1.0
+ */
 public interface StorageService {
 
     /**

@@ -163,15 +163,16 @@
             "DTO Pattern - API Layer Separation"
         ],
         "database": {
-            "type": "PostgreSQL 16",
+            "type": "H2 (dateibasiert)",
             "orm": "JPA/Hibernate",
-            "ddl_auto": "update",
-            "connection": {
-                "url": "jdbc:postgresql://localhost:5432/rentacar",
-                "user": "postgres",
-                "password": "password"
-            },
-            "docker_compose": "compose.yaml"
+            "ddl_auto": "create-drop",
+            "h2": {
+                "url": "jdbc:h2:file:./data/rentacar",
+                "console": "http://localhost:8080/h2-console",
+                "user": "sa",
+                "password": "",
+                "file": "./data/rentacar.mv.db"
+            }
         }
     },
     "important_files": [

@@ -13,6 +13,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestControllerAdvice
+/**
+ * Custom Exception.
+ * 
+ * @author RentACar Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(EntityNotFoundException.class)

@@ -22,6 +22,13 @@ import java.io.IOException;
  * User.
  */
 @Component
+/**
+ * Domain-Klasse für JwtAuthenticationFilter.
+ * 
+ * @author RentACar Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired(required = false)

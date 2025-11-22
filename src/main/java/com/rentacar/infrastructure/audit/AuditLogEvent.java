@@ -7,6 +7,13 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
+/**
+ * Domain Event.
+ * 
+ * @author RentACar Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class AuditLogEvent extends ApplicationEvent {
 
     private final String actor;

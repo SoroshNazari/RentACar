@@ -18,6 +18,13 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/v1/admin/price-configurations")
 @RequiredArgsConstructor
 @Tag(name = "Price Configuration", description = "Admin API für Preiskonfiguration")
+/**
+ * REST Controller für booking-Verwaltung.
+ * 
+ * @author RentACar Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class PriceConfigurationController {
 
     private final PriceConfigurationService priceConfigurationService;

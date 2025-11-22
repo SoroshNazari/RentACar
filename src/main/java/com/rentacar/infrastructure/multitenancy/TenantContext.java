@@ -6,6 +6,13 @@ import lombok.extern.slf4j.Slf4j;
  * Thread-local storage for current tenant context.
  */
 @Slf4j
+/**
+ * Domain-Klasse für TenantContext.
+ * 
+ * @author RentACar Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class TenantContext {
 
     private static final ThreadLocal<String> currentTenant = new ThreadLocal<>();

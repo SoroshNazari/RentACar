@@ -13,6 +13,13 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/rentals")
 @RequiredArgsConstructor
 @Tag(name = "Rental", description = "Rental Process API")
+/**
+ * REST Controller für rental-Verwaltung.
+ * 
+ * @author RentACar Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class RentalController {
 
     private final RentalService rentalService;

@@ -11,6 +11,13 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component
+/**
+ * Event Listener.
+ * 
+ * @author RentACar Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class TenantEntityListener {
 
     @PrePersist
