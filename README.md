@@ -1,4 +1,4 @@
-# RentACar Backend API
+# RentACar Backend
 
 ## 📋 Projektübersicht
 
