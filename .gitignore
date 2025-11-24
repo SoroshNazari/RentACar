@@ -52,3 +52,5 @@ logs/
 .env
 secrets.yml
 application-secrets.yml
+data/*.db
+data/*.trace.db
