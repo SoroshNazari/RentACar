@@ -44,6 +44,9 @@ public class Vehicle extends BaseEntity {
     @Column(nullable = false)
     private Double dailyPrice;
 
+    @Column(length = 500)
+    private String imageUrl; // URL zum Fahrzeugbild
+
     /**
      * Domain-Methode: Fahrzeug als vermietet markieren
      */

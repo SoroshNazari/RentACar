@@ -28,7 +28,7 @@ public class VehicleManagementService {
     @Transactional
     public Vehicle addVehicle(String licensePlate, String brand, String model, 
                              VehicleType type, Long mileage, String location, 
-                             Double dailyPrice, String username, String ipAddress) {
+                             Double dailyPrice, String imageUrl, String username, String ipAddress) {
         LicensePlate plate = LicensePlate.of(licensePlate);
         
         // Prüfe ob Kennzeichen bereits existiert
@@ -45,6 +45,7 @@ public class VehicleManagementService {
                 .mileage(mileage)
                 .location(location)
                 .dailyPrice(dailyPrice)
+                .imageUrl(imageUrl)
                 .status(VehicleStatus.VERFÜGBAR)
                 .build();
 
@@ -64,7 +65,7 @@ public class VehicleManagementService {
     @Transactional
     public Vehicle updateVehicle(Long vehicleId, String brand, String model, 
                                 VehicleType type, String location, Double dailyPrice,
-                                String username, String ipAddress) {
+                                String imageUrl, String username, String ipAddress) {
         Vehicle vehicle = vehicleRepository.findById(vehicleId)
                 .orElseThrow(() -> new IllegalArgumentException("Fahrzeug nicht gefunden"));
 
@@ -73,6 +74,7 @@ public class VehicleManagementService {
         if (type != null) vehicle.setType(type);
         if (location != null) vehicle.setLocation(location);
         if (dailyPrice != null) vehicle.setDailyPrice(dailyPrice);
+        if (imageUrl != null) vehicle.setImageUrl(imageUrl);
 
         Vehicle savedVehicle = vehicleRepository.save(vehicle);
 

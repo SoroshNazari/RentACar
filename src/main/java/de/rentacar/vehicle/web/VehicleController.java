@@ -34,6 +34,7 @@ public class VehicleController {
                 request.mileage(),
                 request.location(),
                 request.dailyPrice(),
+                request.imageUrl(),
                 authentication.getName(),
                 httpRequest.getRemoteAddr()
         );
@@ -52,6 +53,7 @@ public class VehicleController {
                 request.type(),
                 request.location(),
                 request.dailyPrice(),
+                request.imageUrl(),
                 authentication.getName(),
                 httpRequest.getRemoteAddr()
         );
@@ -87,7 +89,8 @@ public class VehicleController {
             VehicleType type,
             Long mileage,
             String location,
-            Double dailyPrice
+            Double dailyPrice,
+            String imageUrl
     ) {}
 
     public record UpdateVehicleRequest(
@@ -95,7 +98,8 @@ public class VehicleController {
             String model,
             VehicleType type,
             String location,
-            Double dailyPrice
+            Double dailyPrice,
+            String imageUrl
     ) {}
 }
 
