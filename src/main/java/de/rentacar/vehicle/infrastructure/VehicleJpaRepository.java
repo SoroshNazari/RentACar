@@ -1,5 +1,6 @@
 package de.rentacar.vehicle.infrastructure;
 
+import de.rentacar.booking.domain.BookingStatus;
 import de.rentacar.vehicle.domain.Vehicle;
 import de.rentacar.vehicle.domain.VehicleStatus;
 import de.rentacar.vehicle.domain.VehicleType;
@@ -25,15 +26,17 @@ public interface VehicleJpaRepository extends JpaRepository<Vehicle, Long> {
     
     List<Vehicle> findByLocation(String location);
     
-    @Query("SELECT v FROM Vehicle v WHERE v.status = 'VERFÜGBAR' " +
-           "AND v.type = :type AND v.location = :location " +
+    @Query("SELECT v FROM Vehicle v WHERE v.status = :status " +
+           "AND v.type = :type AND UPPER(v.location) = UPPER(:location) " +
            "AND v.id NOT IN " +
            "(SELECT b.vehicle.id FROM de.rentacar.booking.domain.Booking b " +
-           "WHERE b.status = 'BESTÄTIGT' " +
+           "WHERE b.status = :bookingStatus " +
            "AND ((b.pickupDate <= :endDate AND b.returnDate >= :startDate)))")
     List<Vehicle> findAvailableVehicles(@Param("type") VehicleType type,
                                         @Param("location") String location,
                                         @Param("startDate") LocalDate startDate,
-                                        @Param("endDate") LocalDate endDate);
+                                        @Param("endDate") LocalDate endDate,
+                                        @Param("status") VehicleStatus status,
+                                        @Param("bookingStatus") BookingStatus bookingStatus);
 }
 

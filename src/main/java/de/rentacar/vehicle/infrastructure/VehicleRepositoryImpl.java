@@ -58,7 +58,8 @@ public class VehicleRepositoryImpl implements VehicleRepository {
 
     @Override
     public List<Vehicle> findAvailableVehicles(VehicleType type, String location, LocalDate startDate, LocalDate endDate) {
-        return jpaRepository.findAvailableVehicles(type, location, startDate, endDate);
+        return jpaRepository.findAvailableVehicles(type, location, startDate, endDate, 
+                VehicleStatus.VERFÜGBAR, de.rentacar.booking.domain.BookingStatus.BESTÄTIGT);
     }
 
     @Override

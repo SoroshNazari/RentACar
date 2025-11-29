@@ -31,9 +31,13 @@ public class BookingController {
             @RequestParam String location,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        List<Vehicle> vehicles = bookingService.searchAvailableVehicles(
-                vehicleType, location, startDate, endDate);
-        return ResponseEntity.ok(vehicles);
+        try {
+            List<Vehicle> vehicles = bookingService.searchAvailableVehicles(
+                    vehicleType, location.trim(), startDate, endDate);
+            return ResponseEntity.ok(vehicles);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @PostMapping
