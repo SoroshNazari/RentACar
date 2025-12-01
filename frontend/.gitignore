@@ -22,3 +22,15 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+coverage/
+playwright-report/
+public/test-report/
+screenshots/
+test-results/
+lighthouse-report.json
+.env
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
