@@ -7,6 +7,7 @@ import de.rentacar.vehicle.domain.VehicleType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -51,6 +52,9 @@ public class BookingController {
                 request.returnDate(),
                 request.pickupLocation(),
                 request.returnLocation(),
+                request.insurance(),
+                request.additionalDriver(),
+                request.childSeat(),
                 authentication.getName(),
                 httpRequest.getRemoteAddr()
         );
@@ -58,6 +62,7 @@ public class BookingController {
     }
 
     @PutMapping("/{id}/confirm")
+    @PreAuthorize("hasAnyRole('EMPLOYEE','ADMIN')")
     public ResponseEntity<Void> confirmBooking(@PathVariable Long id,
                                               Authentication authentication,
                                               HttpServletRequest httpRequest) {
@@ -84,7 +89,56 @@ public class BookingController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate pickupDate,
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate returnDate,
             String pickupLocation,
-            String returnLocation
+            String returnLocation,
+            boolean insurance,
+            boolean additionalDriver,
+            boolean childSeat
     ) {}
-}
 
+    @PutMapping("/{id}/checkout")
+    @PreAuthorize("hasAnyRole('EMPLOYEE','ADMIN')")
+    public ResponseEntity<Booking> checkout(@PathVariable Long id, @RequestBody CheckoutRequest request) {
+        try {
+            Booking updated = bookingService.checkout(id, request.mileage(), request.notes(), "employee");
+            return ResponseEntity.ok(updated);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+    }
+
+    @GetMapping("/pickups")
+    @PreAuthorize("hasAnyRole('EMPLOYEE','ADMIN')")
+    public ResponseEntity<List<Booking>> pickups(@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        return ResponseEntity.ok(bookingService.getPickupsForDate(date));
+    }
+
+    @GetMapping("/returns")
+    @PreAuthorize("hasAnyRole('EMPLOYEE','ADMIN')")
+    public ResponseEntity<List<Booking>> returns(@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        return ResponseEntity.ok(bookingService.getReturnsForDate(date));
+    }
+
+    @GetMapping("/requests")
+    @PreAuthorize("hasAnyRole('EMPLOYEE','ADMIN')")
+    public ResponseEntity<List<Booking>> requests(@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        return ResponseEntity.ok(bookingService.getRequestsForDate(date));
+    }
+
+    @PutMapping("/{id}/checkin")
+    @PreAuthorize("hasAnyRole('EMPLOYEE','ADMIN')")
+    public ResponseEntity<Booking> checkin(@PathVariable Long id, @RequestBody CheckinRequest request) {
+        try {
+            Booking updated = bookingService.checkin(id, request.mileage(), request.damagePresent(), request.damageNotes(), request.damageCost(), request.actualReturnTime());
+            return ResponseEntity.ok(updated);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+    }
+
+    public record CheckoutRequest(java.math.BigDecimal mileage, String notes) {}
+    public record CheckinRequest(java.math.BigDecimal mileage, Boolean damagePresent, String damageNotes, java.math.BigDecimal damageCost, java.time.LocalDateTime actualReturnTime) {}
+}

@@ -126,21 +126,39 @@ const VehicleListPage = () => {
               onClick={() => navigate(`/vehicle/${vehicle.id}`)}
             >
               <div className="aspect-video bg-dark-700 rounded-lg mb-4 overflow-hidden">
-                {vehicle.imageUrl ? (
-                  <img
-                    src={vehicle.imageUrl}
-                    alt={`${vehicle.brand} ${vehicle.model}`}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none'
-                      e.currentTarget.parentElement!.innerHTML = '<span class="text-6xl flex items-center justify-center h-full">🚗</span>'
-                    }}
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <span className="text-6xl">🚗</span>
-                  </div>
-                )}
+                {(() => {
+                  const rawHero = normalizeImageUrl((vehicle.imageGallery && vehicle.imageGallery[0]) || vehicle.imageUrl)
+                  const hero = rawHero && rawHero.startsWith('http')
+                    ? `/api/assets/image?url=${encodeURIComponent(rawHero)}`
+                    : rawHero
+                  if (!hero) {
+                    return (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <span className="text-6xl">🚗</span>
+                      </div>
+                    )
+                  }
+                  return (
+                    <img
+                      src={hero || ''}
+                      alt={`${vehicle.brand} ${vehicle.model}`}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const img = e.currentTarget
+                        if (hero && hero.startsWith('/api/assets/image')) {
+                          img.src = rawHero || ''
+                          img.onerror = () => {
+                            img.style.display = 'none'
+                            img.parentElement!.innerHTML = '<span class="text-6xl flex items-center justify-center h-full">🚗</span>'
+                          }
+                        } else {
+                          img.style.display = 'none'
+                          img.parentElement!.innerHTML = '<span class="text-6xl flex items-center justify-center h-full">🚗</span>'
+                        }
+                      }}
+                    />
+                  )
+                })()}
               </div>
               <h3 className="text-xl font-semibold text-white mb-2">
                 {vehicle.brand} {vehicle.model}
@@ -149,7 +167,7 @@ const VehicleListPage = () => {
               <p className="text-sm text-gray-500 mb-4">Location: {vehicle.location}</p>
               <div className="flex items-center justify-between mb-4">
                 <span className="text-2xl font-bold text-primary-600">
-                  ${vehicle.dailyPrice}/day
+                  {new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(vehicle.dailyPrice)}/day
                 </span>
               </div>
               <button
@@ -170,4 +188,20 @@ const VehicleListPage = () => {
 }
 
 export default VehicleListPage
-
+const normalizeImageUrl = (raw: string | undefined) => {
+  if (!raw) return ''
+  try {
+    const u = new URL(raw)
+    if (u.host === 'images.unsplash.com' && !u.searchParams.has('ixlib')) {
+      u.searchParams.set('ixlib', 'rb-4.0.3')
+      u.searchParams.set('auto', 'format')
+      u.searchParams.set('fit', 'crop')
+      if (!u.searchParams.has('w')) u.searchParams.set('w', '800')
+      if (!u.searchParams.has('q')) u.searchParams.set('q', '80')
+      return u.toString()
+    }
+    return raw
+  } catch {
+    return raw
+  }
+}

@@ -31,6 +31,7 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) {
         initializeUsers();
         initializeVehicles();
+        normalizeVehicleGalleries();
         initializeCustomers();
         // Optional: initializeBookings(); // Kann später aktiviert werden
     }
@@ -72,74 +73,88 @@ public class DataInitializer implements CommandLineRunner {
 
     private void initializeVehicles() {
         if (vehicleRepository.findAll().isEmpty()) {
-            // Berlin Fahrzeuge
-            createVehicle("B-AB 1234", "BMW", "320d", VehicleType.MITTELKLASSE, 50000L, "Berlin", 60.0);
-            createVehicle("B-CD 5678", "Audi", "Q5", VehicleType.SUV, 60000L, "Berlin", 80.0);
-            createVehicle("B-EF 9012", "Mercedes", "E-Klasse", VehicleType.OBERKLASSE, 45000L, "Berlin", 95.0);
-            createVehicle("B-GH 3456", "VW", "Golf", VehicleType.KOMPAKTKLASSE, 35000L, "Berlin", 45.0);
-            createVehicle("B-IJ 7890", "BMW", "X3", VehicleType.SUV, 55000L, "Berlin", 85.0);
-            createVehicle("B-KL 2468", "Audi", "A4", VehicleType.MITTELKLASSE, 40000L, "Berlin", 65.0);
-            createVehicle("B-MN 1357", "Mercedes", "C-Klasse", VehicleType.MITTELKLASSE, 38000L, "Berlin", 70.0);
-            createVehicle("B-OP 8024", "VW", "Polo", VehicleType.KLEINWAGEN, 25000L, "Berlin", 35.0);
-            createVehicle("B-QR 4680", "BMW", "i3", VehicleType.KOMPAKTKLASSE, 20000L, "Berlin", 50.0);
-            createVehicle("B-ST 9753", "Audi", "TT", VehicleType.SPORTWAGEN, 30000L, "Berlin", 120.0);
-
-            // München Fahrzeuge
-            createVehicle("M-AB 1234", "Mercedes", "C220", VehicleType.MITTELKLASSE, 30000L, "München", 65.0);
-            createVehicle("M-CD 5678", "BMW", "520d", VehicleType.OBERKLASSE, 50000L, "München", 90.0);
-            createVehicle("M-EF 9012", "Audi", "A6", VehicleType.OBERKLASSE, 55000L, "München", 100.0);
-            createVehicle("M-GH 3456", "Mercedes", "GLC", VehicleType.SUV, 40000L, "München", 95.0);
-            createVehicle("M-IJ 7890", "BMW", "X5", VehicleType.SUV, 60000L, "München", 110.0);
-            createVehicle("M-KL 2468", "VW", "Passat", VehicleType.MITTELKLASSE, 45000L, "München", 55.0);
-            createVehicle("M-MN 1357", "Audi", "A3", VehicleType.KOMPAKTKLASSE, 30000L, "München", 50.0);
-            createVehicle("M-OP 8024", "Mercedes", "A-Klasse", VehicleType.KOMPAKTKLASSE, 25000L, "München", 48.0);
-            createVehicle("M-QR 4680", "BMW", "1er", VehicleType.KOMPAKTKLASSE, 28000L, "München", 45.0);
-            createVehicle("M-ST 9753", "Porsche", "911", VehicleType.SPORTWAGEN, 15000L, "München", 250.0);
-
-            // Hamburg Fahrzeuge
-            createVehicle("H-AB 1234", "VW", "Golf", VehicleType.KOMPAKTKLASSE, 40000L, "Hamburg", 40.0);
-            createVehicle("H-CD 5678", "BMW", "320i", VehicleType.MITTELKLASSE, 45000L, "Hamburg", 58.0);
-            createVehicle("H-EF 9012", "Mercedes", "CLA", VehicleType.MITTELKLASSE, 35000L, "Hamburg", 62.0);
-            createVehicle("H-GH 3456", "Audi", "Q3", VehicleType.SUV, 38000L, "Hamburg", 75.0);
-            createVehicle("H-IJ 7890", "VW", "Tiguan", VehicleType.SUV, 50000L, "Hamburg", 70.0);
-            createVehicle("H-KL 2468", "BMW", "X1", VehicleType.SUV, 42000L, "Hamburg", 68.0);
-            createVehicle("H-MN 1357", "Mercedes", "B-Klasse", VehicleType.VAN, 30000L, "Hamburg", 55.0);
-            createVehicle("H-OP 8024", "VW", "Touran", VehicleType.VAN, 45000L, "Hamburg", 60.0);
-            createVehicle("H-QR 4680", "Audi", "A1", VehicleType.KLEINWAGEN, 20000L, "Hamburg", 38.0);
-            createVehicle("H-ST 9753", "BMW", "Z4", VehicleType.SPORTWAGEN, 25000L, "Hamburg", 130.0);
-
-            // Frankfurt Fahrzeuge
-            createVehicle("F-AB 1234", "Audi", "A5", VehicleType.OBERKLASSE, 40000L, "Frankfurt", 85.0);
-            createVehicle("F-CD 5678", "BMW", "430d", VehicleType.OBERKLASSE, 45000L, "Frankfurt", 88.0);
-            createVehicle("F-EF 9012", "Mercedes", "S-Klasse", VehicleType.OBERKLASSE, 60000L, "Frankfurt", 150.0);
-            createVehicle("F-GH 3456", "BMW", "X7", VehicleType.SUV, 50000L, "Frankfurt", 130.0);
-            createVehicle("F-IJ 7890", "Audi", "Q7", VehicleType.SUV, 55000L, "Frankfurt", 120.0);
-            createVehicle("F-KL 2468", "Mercedes", "V-Klasse", VehicleType.VAN, 40000L, "Frankfurt", 85.0);
-            createVehicle("F-MN 1357", "VW", "Arteon", VehicleType.OBERKLASSE, 35000L, "Frankfurt", 75.0);
-            createVehicle("F-OP 8024", "BMW", "iX", VehicleType.SUV, 20000L, "Frankfurt", 95.0);
-            createVehicle("F-QR 4680", "Audi", "e-tron", VehicleType.SUV, 15000L, "Frankfurt", 90.0);
-            createVehicle("F-ST 9753", "Porsche", "Cayenne", VehicleType.SUV, 30000L, "Frankfurt", 180.0);
-
-            // Köln Fahrzeuge
-            createVehicle("K-AB 1234", "VW", "ID.3", VehicleType.KOMPAKTKLASSE, 10000L, "Köln", 55.0);
-            createVehicle("K-CD 5678", "BMW", "i4", VehicleType.MITTELKLASSE, 8000L, "Köln", 70.0);
-            createVehicle("K-EF 9012", "Mercedes", "EQC", VehicleType.SUV, 12000L, "Köln", 85.0);
-            createVehicle("K-GH 3456", "Audi", "e-tron GT", VehicleType.OBERKLASSE, 5000L, "Köln", 140.0);
-            createVehicle("K-IJ 7890", "VW", "ID.4", VehicleType.SUV, 15000L, "Köln", 65.0);
-            createVehicle("K-KL 2468", "BMW", "3er", VehicleType.MITTELKLASSE, 40000L, "Köln", 60.0);
-            createVehicle("K-MN 1357", "Mercedes", "GLA", VehicleType.SUV, 35000L, "Köln", 72.0);
-            createVehicle("K-OP 8024", "Audi", "A4 Avant", VehicleType.MITTELKLASSE, 45000L, "Köln", 68.0);
-            createVehicle("K-QR 4680", "VW", "T-Cross", VehicleType.SUV, 30000L, "Köln", 58.0);
-            createVehicle("K-ST 9753", "BMW", "M3", VehicleType.SPORTWAGEN, 20000L, "Köln", 200.0);
+            seedVehicles();
         }
     }
 
-    private void createVehicle(String licensePlate, String brand, String model, 
-                               VehicleType type, Long mileage, String location, Double dailyPrice) {
+    public void resetVehicles() {
+        try {
+            vehicleRepository.deleteAll();
+        } catch (Exception e) {
+            throw new RuntimeException("Konnte Fahrzeuge nicht löschen", e);
+        }
+        seedVehicles();
+    }
+
+    private void seedVehicles() {
+        // Berlin Fahrzeuge
+        createVehicle("B-AB 1234", "BMW", "320d", VehicleType.MITTELKLASSE, 2018, 50000L, "Berlin", 60.0);
+        createVehicle("B-CD 5678", "Audi", "Q5", VehicleType.SUV, 2019, 60000L, "Berlin", 80.0);
+        createVehicle("B-EF 9012", "Mercedes", "E-Klasse", VehicleType.OBERKLASSE, 2018, 45000L, "Berlin", 95.0);
+        createVehicle("B-GH 3456", "VW", "Golf", VehicleType.KOMPAKTKLASSE, 2017, 35000L, "Berlin", 45.0);
+        createVehicle("B-IJ 7890", "BMW", "X3", VehicleType.SUV, 2019, 55000L, "Berlin", 85.0);
+        createVehicle("B-KL 2468", "Audi", "A4", VehicleType.MITTELKLASSE, 2018, 40000L, "Berlin", 65.0);
+        createVehicle("B-MN 1357", "Mercedes", "C-Klasse", VehicleType.MITTELKLASSE, 2017, 38000L, "Berlin", 70.0);
+        createVehicle("B-OP 8024", "VW", "Polo", VehicleType.KLEINWAGEN, 2020, 25000L, "Berlin", 35.0);
+        createVehicle("B-QR 4680", "BMW", "i3", VehicleType.KOMPAKTKLASSE, 2018, 20000L, "Berlin", 50.0);
+        createVehicle("B-ST 9753", "Audi", "TT", VehicleType.SPORTWAGEN, 2016, 30000L, "Berlin", 120.0);
+
+        // München Fahrzeuge
+        createVehicle("M-AB 1234", "Mercedes", "C220", VehicleType.MITTELKLASSE, 2017, 30000L, "München", 65.0);
+        createVehicle("M-CD 5678", "BMW", "520d", VehicleType.OBERKLASSE, 2018, 50000L, "München", 90.0);
+        createVehicle("M-EF 9012", "Audi", "A6", VehicleType.OBERKLASSE, 2019, 55000L, "München", 100.0);
+        createVehicle("M-GH 3456", "Mercedes", "GLC", VehicleType.SUV, 2019, 40000L, "München", 95.0);
+        createVehicle("M-IJ 7890", "BMW", "X5", VehicleType.SUV, 2020, 60000L, "München", 110.0);
+        createVehicle("M-KL 2468", "VW", "Passat", VehicleType.MITTELKLASSE, 2018, 45000L, "München", 55.0);
+        createVehicle("M-MN 1357", "Audi", "A3", VehicleType.KOMPAKTKLASSE, 2017, 30000L, "München", 50.0);
+        createVehicle("M-OP 8024", "Mercedes", "A-Klasse", VehicleType.KOMPAKTKLASSE, 2018, 25000L, "München", 48.0);
+        createVehicle("M-QR 4680", "BMW", "1er", VehicleType.KOMPAKTKLASSE, 2017, 28000L, "München", 45.0);
+        createVehicle("M-ST 9753", "Porsche", "911", VehicleType.SPORTWAGEN, 2015, 15000L, "München", 250.0);
+
+        // Hamburg Fahrzeuge
+        createVehicle("H-AB 1234", "VW", "Golf", VehicleType.KOMPAKTKLASSE, 2016, 40000L, "Hamburg", 40.0);
+        createVehicle("H-CD 5678", "BMW", "320i", VehicleType.MITTELKLASSE, 2017, 45000L, "Hamburg", 58.0);
+        createVehicle("H-EF 9012", "Mercedes", "CLA", VehicleType.MITTELKLASSE, 2018, 35000L, "Hamburg", 62.0);
+        createVehicle("H-GH 3456", "Audi", "Q3", VehicleType.SUV, 2018, 38000L, "Hamburg", 75.0);
+        createVehicle("H-IJ 7890", "VW", "Tiguan", VehicleType.SUV, 2019, 50000L, "Hamburg", 70.0);
+        createVehicle("H-KL 2468", "BMW", "X1", VehicleType.SUV, 2017, 42000L, "Hamburg", 68.0);
+        createVehicle("H-MN 1357", "Mercedes", "B-Klasse", VehicleType.VAN, 2016, 30000L, "Hamburg", 55.0);
+        createVehicle("H-OP 8024", "VW", "Touran", VehicleType.VAN, 2017, 45000L, "Hamburg", 60.0);
+        createVehicle("H-QR 4680", "Audi", "A1", VehicleType.KLEINWAGEN, 2018, 20000L, "Hamburg", 38.0);
+        createVehicle("H-ST 9753", "BMW", "Z4", VehicleType.SPORTWAGEN, 2015, 25000L, "Hamburg", 130.0);
+
+        // Frankfurt Fahrzeuge
+        createVehicle("F-AB 1234", "Audi", "A5", VehicleType.OBERKLASSE, 2019, 40000L, "Frankfurt", 85.0);
+        createVehicle("F-CD 5678", "BMW", "430d", VehicleType.OBERKLASSE, 2019, 45000L, "Frankfurt", 88.0);
+        createVehicle("F-EF 9012", "Mercedes", "S-Klasse", VehicleType.OBERKLASSE, 2020, 60000L, "Frankfurt", 150.0);
+        createVehicle("F-GH 3456", "BMW", "X7", VehicleType.SUV, 2020, 50000L, "Frankfurt", 130.0);
+        createVehicle("F-IJ 7890", "Audi", "Q7", VehicleType.SUV, 2019, 55000L, "Frankfurt", 120.0);
+        createVehicle("F-KL 2468", "Mercedes", "V-Klasse", VehicleType.VAN, 2018, 40000L, "Frankfurt", 85.0);
+        createVehicle("F-MN 1357", "VW", "Arteon", VehicleType.OBERKLASSE, 2018, 35000L, "Frankfurt", 75.0);
+        createVehicle("F-OP 8024", "BMW", "iX", VehicleType.SUV, 2021, 20000L, "Frankfurt", 95.0);
+        createVehicle("F-QR 4680", "Audi", "e-tron", VehicleType.SUV, 2021, 15000L, "Frankfurt", 90.0);
+        createVehicle("F-ST 9753", "Porsche", "Cayenne", VehicleType.SUV, 2018, 30000L, "Frankfurt", 180.0);
+
+        // Köln Fahrzeuge
+        createVehicle("K-AB 1234", "VW", "ID.3", VehicleType.KOMPAKTKLASSE, 2021, 10000L, "Köln", 55.0);
+        createVehicle("K-CD 5678", "BMW", "i4", VehicleType.MITTELKLASSE, 2022, 8000L, "Köln", 70.0);
+        createVehicle("K-EF 9012", "Mercedes", "EQC", VehicleType.SUV, 2021, 12000L, "Köln", 85.0);
+        createVehicle("K-GH 3456", "Audi", "e-tron GT", VehicleType.OBERKLASSE, 2021, 5000L, "Köln", 140.0);
+        createVehicle("K-IJ 7890", "VW", "ID.4", VehicleType.SUV, 2021, 15000L, "Köln", 65.0);
+        createVehicle("K-KL 2468", "BMW", "3er", VehicleType.MITTELKLASSE, 2017, 40000L, "Köln", 60.0);
+        createVehicle("K-MN 1357", "Mercedes", "GLA", VehicleType.SUV, 2018, 35000L, "Köln", 72.0);
+        createVehicle("K-OP 8024", "Audi", "A4 Avant", VehicleType.MITTELKLASSE, 2017, 45000L, "Köln", 68.0);
+        createVehicle("K-QR 4680", "VW", "T-Cross", VehicleType.SUV, 2019, 30000L, "Köln", 58.0);
+        createVehicle("K-ST 9753", "BMW", "M3", VehicleType.SPORTWAGEN, 2018, 20000L, "Köln", 200.0);
+    }
+
+    private void createVehicle(String licensePlate, String brand, String model,
+                               VehicleType type, Integer year, Long mileage, String location, Double dailyPrice) {
         try {
             String imageUrl = getVehicleImageUrl(brand, model, type);
+            java.util.List<String> gallery = getVehicleImageGallery(brand, model, type);
             vehicleManagementService.addVehicle(
-                    licensePlate, brand, model, type, mileage, location, dailyPrice, imageUrl,
+                    licensePlate, brand, model, type, year, mileage, location, dailyPrice, imageUrl, gallery,
                     "admin", "127.0.0.1"
             );
         } catch (Exception e) {
@@ -149,137 +164,43 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private String getVehicleImageUrl(String brand, String model, VehicleType type) {
-        // Spezifische Bilder für jedes Modell - verschiedene Unsplash-IDs für bessere Vielfalt
-        String brandLower = brand.toLowerCase();
-        String modelLower = model.toLowerCase();
-        
-        // BMW Modelle - verschiedene Bilder für verschiedene Modelle
-        if (brandLower.equals("bmw")) {
-            if (modelLower.contains("320") || modelLower.contains("3er")) {
-                return "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&h=600&fit=crop&auto=format"; // BMW 3er Sedan
-            } else if (modelLower.equals("i3")) {
-                return "https://images.unsplash.com/photo-1593941707882-a5bac6861d75?w=800&h=600&fit=crop&auto=format"; // BMW i3 Electric
-            } else if (modelLower.contains("520") || modelLower.contains("5er")) {
-                return "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&h=600&fit=crop&auto=format"; // BMW 5er
-            } else if (modelLower.equals("i4")) {
-                return "https://images.unsplash.com/photo-1593941707882-a5bac6861d75?w=800&h=600&fit=crop&auto=format"; // BMW i4 Electric
-            } else if (modelLower.contains("x1")) {
-                return "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=600&fit=crop&auto=format"; // BMW X1 SUV
-            } else if (modelLower.contains("x3")) {
-                return "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=600&fit=crop&auto=format"; // BMW X3 SUV
-            } else if (modelLower.contains("x5") || modelLower.contains("x7")) {
-                return "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=600&fit=crop&auto=format"; // BMW X5/X7 SUV
-            } else if (modelLower.equals("ix")) {
-                return "https://images.unsplash.com/photo-1593941707882-a5bac6861d75?w=800&h=600&fit=crop&auto=format"; // BMW iX Electric SUV
-            } else if (modelLower.contains("z4") || modelLower.contains("m3") || modelLower.contains("m4")) {
-                return "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=800&h=600&fit=crop&auto=format"; // BMW Sportwagen
-            } else if (modelLower.contains("1er")) {
-                return "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=800&h=600&fit=crop&auto=format"; // BMW 1er
+        return switch (type) {
+            case KLEINWAGEN -> "/images/vehicle/economy.svg";
+            case KOMPAKTKLASSE -> "/images/vehicle/compact.svg";
+            case MITTELKLASSE -> "/images/vehicle/midsize.svg";
+            case OBERKLASSE -> "/images/vehicle/premium.svg";
+            case SUV -> "/images/vehicle/suv.svg";
+            case VAN -> "/images/vehicle/van.svg";
+            case SPORTWAGEN -> "/images/vehicle/sports.svg";
+        };
+    }
+
+    private java.util.List<String> getVehicleImageGallery(String brand, String model, VehicleType type) {
+        String primary = getVehicleImageUrl(brand, model, type);
+        return java.util.List.of(primary, primary, primary);
+    }
+
+    private void normalizeVehicleGalleries() {
+        var vehicles = vehicleRepository.findAll();
+        for (var v : vehicles) {
+            try {
+                String primary = getVehicleImageUrl(v.getBrand(), v.getModel(), v.getType());
+                java.util.List<String> gallery = java.util.List.of(primary, primary, primary);
+                vehicleManagementService.updateVehicle(
+                        v.getId(),
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        primary,
+                        gallery,
+                        "admin",
+                        "127.0.0.1"
+                );
+            } catch (Exception ignored) {
             }
-        }
-        
-        // Mercedes Modelle
-        if (brandLower.equals("mercedes")) {
-            if (modelLower.contains("c-") || modelLower.contains("c220") || modelLower.contains("cla")) {
-                return "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=800&h=600&fit=crop&auto=format"; // Mercedes C-Klasse Sedan
-            } else if (modelLower.contains("e-") || modelLower.contains("e-klasse")) {
-                return "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=800&h=600&fit=crop&auto=format"; // Mercedes E-Klasse Sedan
-            } else if (modelLower.contains("s-") || modelLower.contains("s-klasse")) {
-                return "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=800&h=600&fit=crop&auto=format"; // Mercedes S-Klasse Luxury
-            } else if (modelLower.contains("glc")) {
-                return "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=600&fit=crop&auto=format"; // Mercedes GLC SUV
-            } else if (modelLower.contains("gla")) {
-                return "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=600&fit=crop&auto=format"; // Mercedes GLA SUV
-            } else if (modelLower.contains("eqc")) {
-                return "https://images.unsplash.com/photo-1593941707882-a5bac6861d75?w=800&h=600&fit=crop&auto=format"; // Mercedes EQC Electric
-            } else if (modelLower.contains("a-") || modelLower.contains("a-klasse")) {
-                return "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=800&h=600&fit=crop&auto=format"; // Mercedes A-Klasse
-            } else if (modelLower.contains("b-") || modelLower.contains("b-klasse")) {
-                return "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=600&fit=crop&auto=format"; // Mercedes B-Klasse Van
-            } else if (modelLower.contains("v-") || modelLower.contains("v-klasse")) {
-                return "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=600&fit=crop&auto=format"; // Mercedes V-Klasse Van
-            }
-        }
-        
-        // Audi Modelle
-        if (brandLower.equals("audi")) {
-            if (modelLower.contains("a1")) {
-                return "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=800&h=600&fit=crop&auto=format"; // Audi A1 Compact
-            } else if (modelLower.contains("a3")) {
-                return "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=800&h=600&fit=crop&auto=format"; // Audi A3 Compact
-            } else if (modelLower.contains("a4")) {
-                return "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=800&h=600&fit=crop&auto=format"; // Audi A4 Sedan
-            } else if (modelLower.contains("a5")) {
-                return "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=800&h=600&fit=crop&auto=format"; // Audi A5 Coupe
-            } else if (modelLower.contains("a6")) {
-                return "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=800&h=600&fit=crop&auto=format"; // Audi A6 Sedan
-            } else if (modelLower.contains("a8")) {
-                return "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=800&h=600&fit=crop&auto=format"; // Audi A8 Luxury
-            } else if (modelLower.contains("q3")) {
-                return "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=600&fit=crop&auto=format"; // Audi Q3 SUV
-            } else if (modelLower.contains("q5")) {
-                return "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=600&fit=crop&auto=format"; // Audi Q5 SUV
-            } else if (modelLower.contains("q7")) {
-                return "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=600&fit=crop&auto=format"; // Audi Q7 SUV
-            } else if (modelLower.contains("tt")) {
-                return "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&h=600&fit=crop&auto=format"; // Audi TT Sports
-            } else if (modelLower.contains("e-tron")) {
-                return "https://images.unsplash.com/photo-1593941707882-a5bac6861d75?w=800&h=600&fit=crop&auto=format"; // Audi e-tron Electric
-            }
-        }
-        
-        // VW Modelle
-        if (brandLower.equals("vw") || brandLower.equals("volkswagen")) {
-            if (modelLower.contains("polo")) {
-                return "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=800&h=600&fit=crop&auto=format"; // VW Polo Small
-            } else if (modelLower.contains("golf")) {
-                return "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=800&h=600&fit=crop&auto=format"; // VW Golf Compact
-            } else if (modelLower.contains("passat")) {
-                return "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&h=600&fit=crop&auto=format"; // VW Passat Mid-size
-            } else if (modelLower.contains("arteon")) {
-                return "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&h=600&fit=crop&auto=format"; // VW Arteon Premium
-            } else if (modelLower.contains("tiguan")) {
-                return "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=600&fit=crop&auto=format"; // VW Tiguan SUV
-            } else if (modelLower.contains("t-cross")) {
-                return "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=600&fit=crop&auto=format"; // VW T-Cross SUV
-            } else if (modelLower.contains("touran")) {
-                return "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=600&fit=crop&auto=format"; // VW Touran Van
-            } else if (modelLower.contains("id.3")) {
-                return "https://images.unsplash.com/photo-1593941707882-a5bac6861d75?w=800&h=600&fit=crop&auto=format"; // VW ID.3 Electric
-            } else if (modelLower.contains("id.4")) {
-                return "https://images.unsplash.com/photo-1593941707882-a5bac6861d75?w=800&h=600&fit=crop&auto=format"; // VW ID.4 Electric SUV
-            }
-        }
-        
-        // Porsche Modelle
-        if (brandLower.equals("porsche")) {
-            if (modelLower.contains("911")) {
-                return "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&h=600&fit=crop&auto=format"; // Porsche 911 Sports
-            } else if (modelLower.contains("cayenne")) {
-                return "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=600&fit=crop&auto=format"; // Porsche Cayenne SUV
-            } else if (modelLower.contains("boxster") || modelLower.contains("cayman")) {
-                return "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&h=600&fit=crop&auto=format"; // Porsche Boxster/Cayman
-            }
-        }
-        
-        // Fallback: Generische Bilder basierend auf Typ
-        switch (type) {
-            case KLEINWAGEN:
-                return "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=800&h=600&fit=crop&auto=format";
-            case KOMPAKTKLASSE:
-                return "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=800&h=600&fit=crop&auto=format";
-            case MITTELKLASSE:
-                return "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&h=600&fit=crop&auto=format";
-            case OBERKLASSE:
-                return "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=800&h=600&fit=crop&auto=format";
-            case SUV:
-                return "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=600&fit=crop&auto=format";
-            case VAN:
-                return "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=600&fit=crop&auto=format";
-            case SPORTWAGEN:
-                return "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&h=600&fit=crop&auto=format";
-            default:
-                return "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&h=600&fit=crop&auto=format";
         }
     }
 

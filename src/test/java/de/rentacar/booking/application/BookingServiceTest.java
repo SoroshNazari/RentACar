@@ -117,6 +117,7 @@ class BookingServiceTest {
                 VehicleType.MITTELKLASSE, tomorrow, nextWeek))
                 .thenReturn(BigDecimal.valueOf(420.00));
         when(bookingRepository.save(any(Booking.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(vehicleRepository.save(any(Vehicle.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
         Booking booking = bookingService.createBooking(
@@ -129,12 +130,14 @@ class BookingServiceTest {
         assertThat(booking.getVehicle().getId()).isEqualTo(1L);
         assertThat(booking.getPickupDate()).isEqualTo(tomorrow);
         assertThat(booking.getReturnDate()).isEqualTo(nextWeek);
-        assertThat(booking.getStatus()).isEqualTo(BookingStatus.ANFRAGE);
+        assertThat(booking.getStatus()).isEqualTo(BookingStatus.BESTÄTIGT);
         assertThat(booking.getTotalPrice()).isEqualByComparingTo(BigDecimal.valueOf(420.00));
 
         verify(availabilityService).isVehicleAvailable(1L, tomorrow, nextWeek);
-        verify(bookingRepository).save(any(Booking.class));
+        verify(bookingRepository, atLeastOnce()).save(any(Booking.class));
+        verify(vehicleRepository).save(any(Vehicle.class));
         verify(auditService).logAction(anyString(), eq("BOOKING_CREATED"), anyString(), anyString(), anyString(), anyString());
+        verify(auditService).logAction(anyString(), eq("BOOKING_CONFIRMED"), anyString(), anyString(), anyString(), anyString());
     }
 
     @Test
@@ -297,12 +300,12 @@ class BookingServiceTest {
     @DisplayName("Sollte Buchungshistorie für Kunde zurückgeben")
     void shouldReturnBookingHistoryForCustomer() {
         // Given
-        Booking booking1 = Booking.builder().customerId(1L).build();
+        Booking booking1 = Booking.builder().customerId(1L).vehicle(testVehicle).build();
         booking1.setId(1L);
-        Booking booking2 = Booking.builder().customerId(1L).build();
+        Booking booking2 = Booking.builder().customerId(1L).vehicle(testVehicle).build();
         booking2.setId(2L);
 
-        when(bookingRepository.findByCustomerId(1L)).thenReturn(List.of(booking1, booking2));
+        when(bookingRepository.findByCustomerIdWithVehicle(1L)).thenReturn(List.of(booking1, booking2));
 
         // When
         List<Booking> result = bookingService.getBookingHistory(1L);
@@ -310,7 +313,7 @@ class BookingServiceTest {
         // Then
         assertThat(result).hasSize(2);
         assertThat(result).containsExactly(booking1, booking2);
-        verify(bookingRepository).findByCustomerId(1L);
+        verify(bookingRepository).findByCustomerIdWithVehicle(1L);
     }
 
     @Test
@@ -353,4 +356,3 @@ class BookingServiceTest {
         assertThat(result).isEmpty();
     }
 }
-

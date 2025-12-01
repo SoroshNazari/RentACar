@@ -26,9 +26,10 @@ public class VehicleManagementService {
      * Use Case: Fahrzeug hinzufügen (Mitarbeiter)
      */
     @Transactional
-    public Vehicle addVehicle(String licensePlate, String brand, String model, 
-                             VehicleType type, Long mileage, String location, 
-                             Double dailyPrice, String imageUrl, String username, String ipAddress) {
+    public Vehicle addVehicle(String licensePlate, String brand, String model,
+                              VehicleType type, Integer year, Long mileage, String location,
+                              Double dailyPrice, String imageUrl, List<String> imageGallery,
+                              String username, String ipAddress) {
         LicensePlate plate = LicensePlate.of(licensePlate);
         
         // Prüfe ob Kennzeichen bereits existiert
@@ -42,10 +43,12 @@ public class VehicleManagementService {
                 .brand(brand)
                 .model(model)
                 .type(type)
+                .year(year)
                 .mileage(mileage)
                 .location(location)
                 .dailyPrice(dailyPrice)
                 .imageUrl(imageUrl)
+                .imageGallery(imageGallery != null ? imageGallery : List.of())
                 .status(VehicleStatus.VERFÜGBAR)
                 .build();
 
@@ -59,22 +62,44 @@ public class VehicleManagementService {
         return savedVehicle;
     }
 
+    @Transactional
+    public Vehicle addVehicle(String licensePlate, String brand, String model,
+                              VehicleType type, Integer year, Long mileage, String location,
+                              Double dailyPrice, String imageUrl,
+                              String username, String ipAddress) {
+        return addVehicle(licensePlate, brand, model, type, year, mileage, location, dailyPrice, imageUrl, null, username, ipAddress);
+    }
+
+    /**
+     * Fügt ein Fahrzeug ohne explizite Bildangaben hinzu.
+     * Bild- und Galerie-Informationen können später über Update gepflegt werden.
+     */
+    @Transactional
+    public Vehicle addVehicle(String licensePlate, String brand, String model,
+                              VehicleType type, Long mileage, String location,
+                              Double dailyPrice, String username, String ipAddress) {
+        return addVehicle(licensePlate, brand, model, type, null, mileage, location, dailyPrice, null, null, username, ipAddress);
+    }
+
     /**
      * Use Case: Fahrzeug bearbeiten (Mitarbeiter)
      */
     @Transactional
-    public Vehicle updateVehicle(Long vehicleId, String brand, String model, 
-                                VehicleType type, String location, Double dailyPrice,
-                                String imageUrl, String username, String ipAddress) {
+    public Vehicle updateVehicle(Long vehicleId, String brand, String model,
+                                VehicleType type, Integer year, String location, Double dailyPrice,
+                                String imageUrl, List<String> imageGallery,
+                                String username, String ipAddress) {
         Vehicle vehicle = vehicleRepository.findById(vehicleId)
                 .orElseThrow(() -> new IllegalArgumentException("Fahrzeug nicht gefunden"));
 
         if (brand != null) vehicle.setBrand(brand);
         if (model != null) vehicle.setModel(model);
         if (type != null) vehicle.setType(type);
+        if (year != null) vehicle.setYear(year);
         if (location != null) vehicle.setLocation(location);
         if (dailyPrice != null) vehicle.setDailyPrice(dailyPrice);
         if (imageUrl != null) vehicle.setImageUrl(imageUrl);
+        if (imageGallery != null) vehicle.setImageGallery(imageGallery);
 
         Vehicle savedVehicle = vehicleRepository.save(vehicle);
 
@@ -84,6 +109,24 @@ public class VehicleManagementService {
                 ipAddress);
 
         return savedVehicle;
+    }
+
+    @Transactional
+    public Vehicle updateVehicle(Long vehicleId, String brand, String model,
+                                VehicleType type, Integer year, String location, Double dailyPrice,
+                                String imageUrl, String username, String ipAddress) {
+        return updateVehicle(vehicleId, brand, model, type, year, location, dailyPrice, imageUrl, null, username, ipAddress);
+    }
+
+    /**
+     * Aktualisiert ein Fahrzeug ohne Bildangaben.
+     * Nützlich für einfache Attribute-Updates.
+     */
+    @Transactional
+    public Vehicle updateVehicle(Long vehicleId, String brand, String model,
+                                 VehicleType type, Integer year, String location, Double dailyPrice,
+                                 String username, String ipAddress) {
+        return updateVehicle(vehicleId, brand, model, type, year, location, dailyPrice, null, null, username, ipAddress);
     }
 
     /**
@@ -120,4 +163,3 @@ public class VehicleManagementService {
                 .orElseThrow(() -> new IllegalArgumentException("Fahrzeug nicht gefunden"));
     }
 }
-

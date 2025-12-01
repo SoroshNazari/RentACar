@@ -3,6 +3,7 @@ package de.rentacar.customer.web;
 import de.rentacar.customer.application.CustomerService;
 import de.rentacar.customer.domain.Customer;
 import lombok.RequiredArgsConstructor;
+import de.rentacar.customer.infrastructure.EncryptionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -19,6 +20,7 @@ import jakarta.servlet.http.HttpServletRequest;
 public class CustomerController {
 
     private final CustomerService customerService;
+    private final EncryptionService encryptionService;
 
     @PostMapping("/register")
     public ResponseEntity<Customer> registerCustomer(@RequestBody RegisterCustomerRequest request,
@@ -65,6 +67,34 @@ public class CustomerController {
         return ResponseEntity.ok(customerService.getCustomerByUsername(username));
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<CustomerDetailsResponse> getOwnDetails(Authentication authentication) {
+        try {
+            String username = authentication.getName();
+            Customer customer = customerService.getCustomerByUsername(username);
+            String email = customer.getEmail() != null ? encryptionService.decrypt(customer.getEmail().getEncryptedValue()) : null;
+            String phone = customer.getPhone() != null ? encryptionService.decrypt(customer.getPhone().getEncryptedValue()) : null;
+            String address = customer.getAddress() != null ? encryptionService.decrypt(customer.getAddress().getEncryptedValue()) : null;
+            String license = customer.getDriverLicenseNumber() != null ? encryptionService.decrypt(customer.getDriverLicenseNumber().getEncryptedValue()) : null;
+
+            CustomerDetailsResponse dto = new CustomerDetailsResponse(
+                    customer.getId(),
+                    customer.getFirstName(),
+                    customer.getLastName(),
+                    email,
+                    phone,
+                    address,
+                    license,
+                    customer.getUsername()
+            );
+            return ResponseEntity.ok(dto);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     public record RegisterCustomerRequest(
             String username,
             String password,
@@ -83,5 +113,15 @@ public class CustomerController {
             String phone,
             String address
     ) {}
-}
 
+    public record CustomerDetailsResponse(
+            Long id,
+            String firstName,
+            String lastName,
+            String email,
+            String phone,
+            String address,
+            String driverLicenseNumber,
+            String username
+    ) {}
+}

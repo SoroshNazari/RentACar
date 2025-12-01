@@ -1,34 +1,60 @@
-import { api } from '../api'
 import axios from 'axios'
 
 jest.mock('axios')
-const mockedAxios = axios as jest.Mocked<typeof axios>
+
+import { ApiClient } from '../api'
 
 describe('ApiClient', () => {
   beforeEach(() => {
-    localStorage.clear()
-    jest.clearAllMocks()
+    jest.resetModules()
   })
+
+  const getApi = async () => {
+    const mockedAxios = axios as jest.Mocked<typeof axios>
+    const mockResponse = {
+      data: {
+        username: 'testuser',
+        roles: ['ROLE_CUSTOMER'],
+        authenticated: true,
+      },
+    }
+
+    mockedAxios.create = jest.fn(() => ({
+      post: jest.fn().mockResolvedValue(mockResponse),
+      get: jest.fn(),
+      put: jest.fn(),
+      interceptors: {
+        request: { use: jest.fn() },
+        response: { use: jest.fn() },
+      },
+    })) as any
+    // Fallback if ApiClient uses axios directly
+    mockedAxios.post = jest.fn().mockResolvedValue(mockResponse) as any
+    ;(mockedAxios as any).interceptors = {
+      request: { use: jest.fn() },
+      response: { use: jest.fn() },
+    }
+
+    // Dynamic import after mocking axios.create
+    const clientStub = {
+      post: jest.fn().mockResolvedValue(mockResponse),
+      get: jest.fn(),
+      put: jest.fn(),
+      interceptors: {
+        request: { use: jest.fn() },
+        response: { use: jest.fn() },
+      },
+    } as any
+    const api = new ApiClient(clientStub)
+    return { api, mockedAxios, mockResponse }
+  }
+const mockedAxios = axios as jest.Mocked<typeof axios>
 
   describe('login', () => {
     it('stores auth token and role on successful login', async () => {
-      const mockResponse = {
-        data: {
-          username: 'testuser',
-          roles: ['ROLE_CUSTOMER'],
-          authenticated: true,
-        },
-      }
-
-      mockedAxios.create = jest.fn(() => ({
-        post: jest.fn().mockResolvedValue(mockResponse),
-        get: jest.fn(),
-        put: jest.fn(),
-        interceptors: {
-          request: { use: jest.fn() },
-          response: { use: jest.fn() },
-        },
-      })) as any
+      const { api } = await getApi()
+      localStorage.clear()
+      jest.clearAllMocks()
 
       await api.login('testuser', 'password')
 
@@ -44,6 +70,8 @@ describe('ApiClient', () => {
       localStorage.setItem('userRole', 'ROLE_CUSTOMER')
       localStorage.setItem('username', 'testuser')
 
+      // direct import for logout (no axios needed)
+      const { api } = require('../api')
       api.logout()
 
       expect(localStorage.getItem('authToken')).toBeNull()
@@ -55,13 +83,14 @@ describe('ApiClient', () => {
   describe('isAuthenticated', () => {
     it('returns true when token exists', () => {
       localStorage.setItem('authToken', 'token')
+      const { api } = require('../api')
       expect(api.isAuthenticated()).toBe(true)
     })
 
     it('returns false when token does not exist', () => {
       localStorage.removeItem('authToken')
+      const { api } = require('../api')
       expect(api.isAuthenticated()).toBe(false)
     })
   })
 })
-

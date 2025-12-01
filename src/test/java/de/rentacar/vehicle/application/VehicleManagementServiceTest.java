@@ -92,6 +92,58 @@ class VehicleManagementServiceTest {
     }
 
     @Test
+    @DisplayName("Sollte Fahrzeug mit Baujahr und Bildern hinzufügen können")
+    void shouldAddVehicleWithYearAndImages() {
+        Vehicle savedVehicle = Vehicle.builder()
+                .licensePlate(LicensePlate.of("B-NEW 1111"))
+                .brand("VW")
+                .model("Golf")
+                .type(VehicleType.KOMPAKTKLASSE)
+                .year(2018)
+                .mileage(15000L)
+                .location("Berlin")
+                .status(VehicleStatus.VERFÜGBAR)
+                .dailyPrice(55.0)
+                .imageUrl("/images/vehicle/compact.svg")
+                .imageGallery(List.of("/images/vehicle/compact.svg", "/images/vehicle/compact.svg"))
+                .build();
+        savedVehicle.setId(2L);
+
+        when(vehicleRepository.findByLicensePlate(any(LicensePlate.class))).thenReturn(Optional.empty());
+        when(vehicleRepository.save(any(Vehicle.class))).thenReturn(savedVehicle);
+
+        Vehicle result = vehicleManagementService.addVehicle(
+                "B-NEW 1111", "VW", "Golf", VehicleType.KOMPAKTKLASSE, 2018, 15000L, "Berlin",
+                55.0, "/images/vehicle/compact.svg", List.of("/images/vehicle/compact.svg", "/images/vehicle/compact.svg"),
+                "employee", "127.0.0.1");
+
+        assertThat(result).isNotNull();
+        assertThat(result.getYear()).isEqualTo(2018);
+        assertThat(result.getImageUrl()).isEqualTo("/images/vehicle/compact.svg");
+        assertThat(result.getImageGallery()).hasSize(2);
+        verify(vehicleRepository).save(any(Vehicle.class));
+        verify(auditService).logAction(anyString(), eq("VEHICLE_ADDED"), anyString(), anyString(), anyString(), anyString());
+    }
+
+    @Test
+    @DisplayName("Sollte Fahrzeug mit Baujahr und Bildern aktualisieren können")
+    void shouldUpdateVehicleWithYearAndImages() {
+        when(vehicleRepository.findById(1L)).thenReturn(Optional.of(testVehicle));
+        when(vehicleRepository.save(any(Vehicle.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Vehicle result = vehicleManagementService.updateVehicle(
+                1L, null, null, null, 2020, null, null,
+                "/images/vehicle/compact.svg", List.of("/images/vehicle/compact.svg"),
+                "employee", "127.0.0.1");
+
+        assertThat(result.getYear()).isEqualTo(2020);
+        assertThat(result.getImageUrl()).isEqualTo("/images/vehicle/compact.svg");
+        assertThat(result.getImageGallery()).hasSize(1);
+        verify(vehicleRepository).save(testVehicle);
+        verify(auditService).logAction(anyString(), eq("VEHICLE_UPDATED"), anyString(), anyString(), anyString(), anyString());
+    }
+
+    @Test
     @DisplayName("Sollte Exception werfen wenn Kennzeichen bereits existiert")
     void shouldThrowExceptionWhenLicensePlateExists() {
         // Given
@@ -117,7 +169,7 @@ class VehicleManagementServiceTest {
 
         // When
         Vehicle result = vehicleManagementService.updateVehicle(
-                1L, "Audi", "A4", VehicleType.OBERKLASSE, "München", 80.0,
+                1L, "Audi", "A4", VehicleType.OBERKLASSE, 2019, "München", 80.0,
                 "employee", "127.0.0.1");
 
         // Then
@@ -139,7 +191,7 @@ class VehicleManagementServiceTest {
 
         // When/Then
         assertThatThrownBy(() -> vehicleManagementService.updateVehicle(
-                1L, "Audi", "A4", null, null, null, "employee", "127.0.0.1"))
+                1L, "Audi", "A4", null, null, null, null, "employee", "127.0.0.1"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("nicht gefunden");
     }
@@ -219,7 +271,7 @@ class VehicleManagementServiceTest {
 
         // When - nur brand ändern
         Vehicle result = vehicleManagementService.updateVehicle(
-                1L, "Audi", null, null, null, null, "employee", "127.0.0.1");
+                1L, "Audi", null, null, null, null, null, "employee", "127.0.0.1");
 
         // Then
         assertThat(result.getBrand()).isEqualTo("Audi");
@@ -239,4 +291,3 @@ class VehicleManagementServiceTest {
                 .hasMessageContaining("nicht gefunden");
     }
 }
-

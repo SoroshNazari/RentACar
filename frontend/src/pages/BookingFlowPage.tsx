@@ -15,6 +15,9 @@ const BookingFlowPage = () => {
   const [customer, setCustomer] = useState<Customer | null>(null)
   const [loading, setLoading] = useState(true)
 
+  const formatCurrency = (amount: number) =>
+    new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(amount)
+
   // Step 1: Dates
   const [pickupDate, setPickupDate] = useState(searchParams.get('pickupDate') || '')
   const [pickupTime, setPickupTime] = useState('10:00')
@@ -38,6 +41,11 @@ const BookingFlowPage = () => {
     cardholderName: '',
     expiryDate: '',
     cvv: '',
+  })
+  const [extras, setExtras] = useState({
+    insurance: false,
+    additionalDriver: false,
+    childSeat: false,
   })
 
   useEffect(() => {
@@ -63,19 +71,23 @@ const BookingFlowPage = () => {
 
   const loadCustomer = async () => {
     try {
-      const username = localStorage.getItem('username') || ''
-      if (username) {
-        const data = await api.getCustomerByUsername(username)
-        setCustomer(data)
-        setCustomerDetails({
-          fullName: `${data.firstName} ${data.lastName}`,
-          email: data.email,
-          phone: data.phone,
-          driverLicense: data.driverLicenseNumber,
-          address: data.address,
-          billingSameAsHome: true,
-        })
+      let data: Customer
+      try {
+        data = await api.getCustomerMe()
+      } catch (err: any) {
+        const username = localStorage.getItem('username') || ''
+        if (!username) throw err
+        data = await api.getCustomerByUsername(username)
       }
+      setCustomer(data)
+      setCustomerDetails({
+        fullName: `${data.firstName} ${data.lastName}`,
+        email: data.email,
+        phone: data.phone,
+        driverLicense: data.driverLicenseNumber,
+        address: data.address,
+        billingSameAsHome: true,
+      })
     } catch (error) {
       console.error('Failed to load customer:', error)
     }
@@ -87,8 +99,11 @@ const BookingFlowPage = () => {
     const end = new Date(dropoffDate)
     const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1
     const basePrice = days * vehicle.dailyPrice
-    const taxes = basePrice * 0.13
-    return basePrice + taxes
+    const extrasCost =
+      days * ((extras.insurance ? 10 : 0) + (extras.additionalDriver ? 5 : 0) + (extras.childSeat ? 3 : 0))
+    const subtotal = basePrice + extrasCost
+    const taxes = subtotal * 0.13
+    return subtotal + taxes
   }
 
   const handleContinueToDetails = () => {
@@ -122,6 +137,9 @@ const BookingFlowPage = () => {
         returnDate: dropoffDate,
         pickupLocation: vehicle.location,
         returnLocation: vehicle.location,
+        insurance: extras.insurance,
+        additionalDriver: extras.additionalDriver,
+        childSeat: extras.childSeat,
       })
       navigate('/dashboard?booking=success')
     } catch (error) {
@@ -329,12 +347,44 @@ const BookingFlowPage = () => {
           )}
 
           {currentStep === 'payment' && (
-            <div className="card">
-              <h2 className="text-2xl font-bold text-white mb-2">Payment Details</h2>
-              <p className="text-gray-400 mb-6">
-                Securely enter your payment information to complete your booking.
-              </p>
-              <div className="flex gap-4 mb-6">
+          <div className="card">
+            <h2 className="text-2xl font-bold text-white mb-2">Payment Details</h2>
+            <p className="text-gray-400 mb-6">
+              Securely enter your payment information to complete your booking.
+            </p>
+            <div className="bg-dark-700 rounded-lg p-4 border border-dark-600 mb-6">
+              <h3 className="text-lg font-semibold text-white mb-3">Extras</h3>
+              <div className="space-y-3">
+                <label className="flex items-center justify-between">
+                  <span className="text-gray-300">Insurance (+10€/Tag)</span>
+                  <input
+                    type="checkbox"
+                    checked={extras.insurance}
+                    onChange={(e) => setExtras({ ...extras, insurance: e.target.checked })}
+                    className="w-4 h-4"
+                  />
+                </label>
+                <label className="flex items-center justify-between">
+                  <span className="text-gray-300">Additional Driver (+5€/Tag)</span>
+                  <input
+                    type="checkbox"
+                    checked={extras.additionalDriver}
+                    onChange={(e) => setExtras({ ...extras, additionalDriver: e.target.checked })}
+                    className="w-4 h-4"
+                  />
+                </label>
+                <label className="flex items-center justify-between">
+                  <span className="text-gray-300">Child Seat (+3€/Tag)</span>
+                  <input
+                    type="checkbox"
+                    checked={extras.childSeat}
+                    onChange={(e) => setExtras({ ...extras, childSeat: e.target.checked })}
+                    className="w-4 h-4"
+                  />
+                </label>
+              </div>
+            </div>
+            <div className="flex gap-4 mb-6">
                 <button
                   onClick={() => setPaymentMethod('card')}
                   className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-colors ${
@@ -448,12 +498,22 @@ const BookingFlowPage = () => {
             <div className="aspect-video bg-dark-700 rounded-lg mb-4 overflow-hidden">
               {vehicle.imageUrl ? (
                 <img
-                  src={vehicle.imageUrl}
+                  src={(vehicle.imageUrl.startsWith('http') ? `/api/assets/image?url=${encodeURIComponent(normalizeImageUrl(vehicle.imageUrl))}` : vehicle.imageUrl) || ''}
                   alt={`${vehicle.brand} ${vehicle.model}`}
                   className="w-full h-full object-cover"
                   onError={(e) => {
-                    e.currentTarget.style.display = 'none'
-                    e.currentTarget.parentElement!.innerHTML = '<span class="text-6xl flex items-center justify-center h-full">🚗</span>'
+                    const img = e.currentTarget
+                    const raw = vehicle.imageUrl
+                    if (img.src.startsWith('/api/assets/image') && raw) {
+                      img.src = raw
+                      img.onerror = () => {
+                        img.style.display = 'none'
+                        img.parentElement!.innerHTML = '<span class="text-6xl flex items-center justify-center h-full">🚗</span>'
+                      }
+                    } else {
+                      img.style.display = 'none'
+                      img.parentElement!.innerHTML = '<span class="text-6xl flex items-center justify-center h-full">🚗</span>'
+                    }
                   }}
                 />
               ) : (
@@ -492,19 +552,37 @@ const BookingFlowPage = () => {
                   <div className="flex justify-between">
                     <span className="text-gray-400">Rental Cost</span>
                     <span className="text-white">
-                      ${(calculateTotal() / 1.13).toFixed(2)}
+                      {(() => {
+                        const start = new Date(pickupDate)
+                        const end = new Date(dropoffDate)
+                        const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1
+                        const base = vehicle!.dailyPrice * days
+                        return formatCurrency(base)
+                      })()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Extras</span>
+                    <span className="text-white">
+                      {(() => {
+                        const start = new Date(pickupDate)
+                        const end = new Date(dropoffDate)
+                        const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1
+                        const extrasCost = days * ((extras.insurance ? 10 : 0) + (extras.additionalDriver ? 5 : 0) + (extras.childSeat ? 3 : 0))
+                        return formatCurrency(extrasCost)
+                      })()}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-400">Taxes & Fees</span>
                     <span className="text-white">
-                      ${(calculateTotal() * 0.13).toFixed(2)}
+                      {formatCurrency(calculateTotal() * 0.13)}
                     </span>
                   </div>
                   <div className="flex justify-between pt-2 border-t border-dark-600">
                     <span className="text-white font-bold">Total</span>
                     <span className="text-white font-bold text-xl">
-                      ${calculateTotal().toFixed(2)}
+                      {formatCurrency(calculateTotal())}
                     </span>
                   </div>
                 </>
@@ -526,4 +604,20 @@ const BookingFlowPage = () => {
 }
 
 export default BookingFlowPage
-
+const normalizeImageUrl = (raw: string | undefined) => {
+  if (!raw) return ''
+  try {
+    const u = new URL(raw)
+    if (u.host === 'images.unsplash.com' && !u.searchParams.has('ixlib')) {
+      u.searchParams.set('ixlib', 'rb-4.0.3')
+      u.searchParams.set('auto', 'format')
+      u.searchParams.set('fit', 'crop')
+      if (!u.searchParams.has('w')) u.searchParams.set('w', '800')
+      if (!u.searchParams.has('q')) u.searchParams.set('q', '80')
+      return u.toString()
+    }
+    return raw
+  } catch {
+    return raw
+  }
+}

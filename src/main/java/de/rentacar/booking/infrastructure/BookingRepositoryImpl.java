@@ -39,6 +39,11 @@ public class BookingRepositoryImpl implements BookingRepository {
     }
 
     @Override
+    public List<Booking> findByCustomerIdWithVehicle(Long customerId) {
+        return jpaRepository.findByCustomerIdWithVehicle(customerId);
+    }
+
+    @Override
     public List<Booking> findByVehicleId(Long vehicleId) {
         return jpaRepository.findByVehicleId(vehicleId);
     }
@@ -52,5 +57,24 @@ public class BookingRepositoryImpl implements BookingRepository {
     public List<Booking> findActiveBookingsByVehicle(Long vehicleId) {
         return jpaRepository.findActiveBookingsByVehicle(vehicleId);
     }
-}
 
+    @Override
+    public List<Booking> findConfirmedByPickupDateWithVehicle(LocalDate date) {
+        return jpaRepository.findConfirmedByPickupDateWithVehicle(date);
+    }
+
+    @Override
+    public List<Booking> findConfirmedByReturnDateWithVehicle(LocalDate date) {
+        return jpaRepository.findConfirmedByReturnDateWithVehicle(date);
+    }
+
+    @Override
+    public List<Booking> findActiveByPickupDateWithVehicle(LocalDate date) {
+        return jpaRepository.findActiveByPickupDateWithVehicle(date);
+    }
+
+    @Override
+    public List<Booking> findRequestsByPickupDateWithVehicle(LocalDate date) {
+        return jpaRepository.findRequestsByPickupDateWithVehicle(date);
+    }
+}

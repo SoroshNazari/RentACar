@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <rect width="800" height="600" fill="#101826"/>
+  <rect x="40" y="420" width="720" height="60" fill="#1f2937"/>
+  <circle cx="220" cy="460" r="50" fill="#e5e7eb"/>
+  <circle cx="580" cy="460" r="50" fill="#e5e7eb"/>
+  <rect x="160" y="300" width="480" height="140" rx="30" fill="#0ea5e9"/>
+  <text x="400" y="200" fill="#e5e7eb" font-size="48" font-family="Arial" text-anchor="middle">Economy</text>
+</svg>

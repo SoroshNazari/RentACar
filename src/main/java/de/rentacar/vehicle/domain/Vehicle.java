@@ -3,6 +3,8 @@ package de.rentacar.vehicle.domain;
 import de.rentacar.shared.domain.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Aggregate Root für Fahrzeuge (Vehicle Context)
@@ -30,6 +32,9 @@ public class Vehicle extends BaseEntity {
     @Column(nullable = false)
     private VehicleType type;
 
+    @Column(name = "model_year")
+    private Integer year;
+
     @Column(nullable = false)
     private Long mileage;
 
@@ -46,6 +51,12 @@ public class Vehicle extends BaseEntity {
 
     @Column(length = 500)
     private String imageUrl; // URL zum Fahrzeugbild
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "vehicle_images", joinColumns = @JoinColumn(name = "vehicle_id"))
+    @Column(name = "image_url", length = 500)
+    @Builder.Default
+    private List<String> imageGallery = new ArrayList<>();
 
     /**
      * Domain-Methode: Fahrzeug als vermietet markieren
@@ -95,4 +106,3 @@ public class Vehicle extends BaseEntity {
         return this.status == VehicleStatus.VERFÜGBAR;
     }
 }
-

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <rect width="800" height="600" fill="#101826"/>
+  <rect x="40" y="410" width="720" height="80" fill="#1f2937"/>
+  <circle cx="220" cy="460" r="60" fill="#e5e7eb"/>
+  <circle cx="580" cy="460" r="60" fill="#e5e7eb"/>
+  <rect x="120" y="260" width="560" height="180" rx="40" fill="#ef4444"/>
+  <text x="400" y="200" fill="#e5e7eb" font-size="52" font-family="Arial" text-anchor="middle">SUV</text>
+</svg>

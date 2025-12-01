@@ -7,6 +7,9 @@ import BookingFlowPage from './pages/BookingFlowPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import CustomerDashboardPage from './pages/CustomerDashboardPage'
+import AboutUsPage from './pages/AboutUsPage'
+import EmployeeCheckoutPage from './pages/EmployeeCheckoutPage'
+import EmployeeCheckinPage from './pages/EmployeeCheckinPage'
 
 function App() {
   return (
@@ -19,10 +22,12 @@ function App() {
         <Route path="vehicle/:id" element={<VehicleDetailPage />} />
         <Route path="booking/:vehicleId" element={<BookingFlowPage />} />
         <Route path="dashboard" element={<CustomerDashboardPage />} />
+        <Route path="employee" element={<EmployeeCheckoutPage />} />
+        <Route path="employee/checkin" element={<EmployeeCheckinPage />} />
+        <Route path="about" element={<AboutUsPage />} />
       </Route>
     </Routes>
   )
 }
 
 export default App
-

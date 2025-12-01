@@ -107,14 +107,19 @@ const HomePage = () => {
       {/* Hero Section */}
       <section className="relative h-[600px] overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-dark-900/90 to-dark-800/70 z-10" />
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{
-            backgroundImage:
-              "url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1920')",
-            filter: 'blur(2px)',
-          }}
-        />
+        {(() => {
+          const raw = 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1920'
+          const proxied = `/api/assets/image?url=${encodeURIComponent(raw)}`
+          return (
+            <div
+              className="absolute inset-0 bg-cover bg-center"
+              style={{
+                backgroundImage: `url('${proxied}')`,
+                filter: 'blur(2px)',
+              }}
+            />
+          )
+        })()}
         <div className="relative z-20 container mx-auto px-4 h-full flex flex-col items-center justify-center text-center">
           <h1 className="text-5xl font-bold text-white mb-4">
             Premium Car Rental Made Simple
@@ -129,7 +134,6 @@ const HomePage = () => {
             >
               Browse Vehicles
             </button>
-            <button className="btn-secondary text-lg px-8">Learn More</button>
           </div>
         </div>
       </section>
@@ -274,22 +278,39 @@ const HomePage = () => {
             {vehicles.map((vehicle) => (
               <div key={vehicle.id} className="card hover:border-primary-600 transition-colors">
                 <div className="aspect-video bg-dark-700 rounded-lg mb-4 overflow-hidden">
-                  {vehicle.imageUrl ? (
-                    <img
-                      src={vehicle.imageUrl}
-                      alt={`${vehicle.brand} ${vehicle.model}`}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        // Fallback zu Emoji wenn Bild nicht lädt
-                        e.currentTarget.style.display = 'none'
-                        e.currentTarget.parentElement!.innerHTML = '<span class="text-4xl flex items-center justify-center h-full">🚗</span>'
-                      }}
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <span className="text-4xl">🚗</span>
-                    </div>
-                  )}
+                  {(() => {
+                    const rawHero = (vehicle.imageGallery && vehicle.imageGallery[0]) || vehicle.imageUrl
+                    const hero = rawHero && rawHero.startsWith('http')
+                      ? `/api/assets/image?url=${encodeURIComponent(rawHero)}`
+                      : rawHero
+                    if (!hero) {
+                      return (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <span className="text-4xl">🚗</span>
+                        </div>
+                      )
+                    }
+                    return (
+                      <img
+                        src={hero || ''}
+                        alt={`${vehicle.brand} ${vehicle.model}`}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const img = e.currentTarget
+                          if (hero && hero.startsWith('/api/assets/image')) {
+                            img.src = rawHero || ''
+                            img.onerror = () => {
+                              img.style.display = 'none'
+                              img.parentElement!.innerHTML = '<span class="text-4xl flex items-center justify-center h-full">🚗</span>'
+                            }
+                          } else {
+                            img.style.display = 'none'
+                            img.parentElement!.innerHTML = '<span class="text-4xl flex items-center justify-center h-full">🚗</span>'
+                          }
+                        }}
+                      />
+                    )
+                  })()}
                 </div>
                 <h3 className="text-xl font-semibold text-white mb-2">
                   {vehicle.brand} {vehicle.model}
@@ -297,7 +318,7 @@ const HomePage = () => {
                 <p className="text-gray-400 mb-4">{getVehicleTypeLabel(vehicle.type)}</p>
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-2xl font-bold text-primary-600">
-                    ${vehicle.dailyPrice}/day
+                    {new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(vehicle.dailyPrice)}/day
                   </span>
                 </div>
                 <button
@@ -316,4 +337,3 @@ const HomePage = () => {
 }
 
 export default HomePage
-

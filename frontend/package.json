@@ -11,16 +11,20 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:e2e": "playwright test",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "format": "prettier --write \"src/**/*.{ts,tsx,css}\""
+    "test:integration": "jest --config ./jest.integration.config.js --runInBand",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
+    "lighthouse": "lighthouse http://localhost:3000 --quiet --enable-error-reporting=false --chrome-flags=\"--headless --no-sandbox --disable-gpu\" --output=json --output-path=./lighthouse-report.json",
+    "userguide": "node scripts/userguide.mjs"
   },
   "dependencies": {
+    "axios": "^1.13.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^7.9.6",
-    "axios": "^1.13.2"
+    "react-router-dom": "^7.9.6"
   },
   "devDependencies": {
+    "@eslint/js": "^9.18.0",
     "@playwright/test": "^1.56.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
@@ -35,12 +39,18 @@
     "autoprefixer": "^10.4.22",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react": "^7.37.2",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
+    "globals": "^15.11.0",
+    "http-server": "^14.1.1",
     "jest": "^30.2.0",
     "jest-environment-jsdom": "^30.2.0",
+    "jest-html-reporters": "^3.1.7",
+    "lighthouse": "^12.1.0",
     "postcss": "^8.5.6",
     "prettier": "^3.6.2",
+    "puppeteer": "^24.31.0",
     "tailwindcss": "^3.4.18",
     "ts-jest": "^29.4.5",
     "typescript": "~5.9.3",

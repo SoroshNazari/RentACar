@@ -208,29 +208,46 @@ Bitte erstelle folgende Dokumente:
 
 ========================
 
-AUFGABE
-
+KONTEXT7 MCP QUELLEN
 ========================
 
-1\. Lade zuerst MCP-Figma-Kontext + lokale Wireframes ein.
+Die folgenden Bibliotheken und Themen sind über Context7 referenziert und bilden die Grundlage für Routing, HTTP, Build und Automatisierung. IDs sind Context7‑kompatibel.
 
-2\. Analysiere alles und definiere die UI-Struktur.
+- React Router: `/remix-run/react-router`
+  - Thema: Routing (Index‑Routes, verschachtelte Routen, Prefix)
+  - Beispiel: createBrowserRouter mit verschachtelten Children
 
-3\. Baue ein komplettes React-Frontend in hoher Qualität.
+- Axios: `/axios/axios`
+  - Thema: Interceptors (Request/Response, Header‑Manipulation, Error Handling)
+  - Hinweis: globale 401‑Behandlung, Header Utils
 
-4\. Integriere Backend vollständig.
+- Vite: `/vitejs/vite`
+  - Thema: Build (CLI‑Optionen, programmatisches `build()`, SSR)
+  - Hinweis: `build.emitAssets`, `build.lib`, `build.target`
 
-5\. Implementiere Tests (Unit/Integration/E2E).
+- Puppeteer: `/puppeteer/puppeteer`
+  - Thema: Launch (headless, args `--no-sandbox`, executablePath)
+  - Hinweis: Stabiler Start in CI/MCP mit Sandbox‑Flags
 
-6\. Verbessere Lighthouse-Werte.
+- Playwright: `/microsoft/playwright`
+  - Thema: Test (test.describe, Tags, Parallel, Fixtures)
+  - Hinweis: Isolierte `page` Fixture pro Test
 
-7\. Erstelle Codequalität (ESLint/Prettier/Sonar).
+Verwendung
+------------------------
 
-8\. Erstelle alle Dokumentationen.
+- Routing
+  - Nutze `createBrowserRouter` mit verschachtelten Children und Index‑Routes
+- HTTP
+  - Richte Request/Response Interceptors im zentralen Axios‑Client ein (Auth, Logging, Fehler)
+- Build
+  - Vite CLI/Config für Production, SSR wo nötig; programmatisches `build()` möglich
+- Automatisierung
+  - Puppeteer für UI‑Screenshots; Playwright für E2E Testing (Cross‑Browser)
 
-9\. Gib den gesamten Code strukturiert aus.
+Hinweis
+------------------------
 
-10\. Beginne jetzt mit Schritt 1.
-
+Die obigen Quellen wurden über Context7 MCP aufgelöst und verifiziert. Für vertiefte Beispiele siehe die jeweiligen Themen in den offiziellen Repos.
 
 

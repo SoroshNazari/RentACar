@@ -1,10 +1,12 @@
 package de.rentacar.vehicle.web;
 
 import de.rentacar.vehicle.application.VehicleManagementService;
+import de.rentacar.shared.infrastructure.DataInitializer;
 import de.rentacar.vehicle.domain.Vehicle;
 import de.rentacar.vehicle.domain.VehicleType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -21,8 +23,10 @@ import java.util.List;
 public class VehicleController {
 
     private final VehicleManagementService vehicleManagementService;
+    private final DataInitializer dataInitializer;
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('EMPLOYEE','ADMIN')")
     public ResponseEntity<Vehicle> addVehicle(@RequestBody CreateVehicleRequest request,
                                              Authentication authentication,
                                              HttpServletRequest httpRequest) {
@@ -31,10 +35,12 @@ public class VehicleController {
                 request.brand(),
                 request.model(),
                 request.type(),
+                request.year(),
                 request.mileage(),
                 request.location(),
                 request.dailyPrice(),
                 request.imageUrl(),
+                request.imageGallery(),
                 authentication.getName(),
                 httpRequest.getRemoteAddr()
         );
@@ -42,6 +48,7 @@ public class VehicleController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('EMPLOYEE','ADMIN')")
     public ResponseEntity<Vehicle> updateVehicle(@PathVariable Long id,
                                                 @RequestBody UpdateVehicleRequest request,
                                                 Authentication authentication,
@@ -51,9 +58,11 @@ public class VehicleController {
                 request.brand(),
                 request.model(),
                 request.type(),
+                request.year(),
                 request.location(),
                 request.dailyPrice(),
                 request.imageUrl(),
+                request.imageGallery(),
                 authentication.getName(),
                 httpRequest.getRemoteAddr()
         );
@@ -61,6 +70,7 @@ public class VehicleController {
     }
 
     @PutMapping("/{id}/out-of-service")
+    @PreAuthorize("hasAnyRole('EMPLOYEE','ADMIN')")
     public ResponseEntity<Void> setOutOfService(@PathVariable Long id,
                                                Authentication authentication,
                                                HttpServletRequest httpRequest) {
@@ -82,24 +92,41 @@ public class VehicleController {
         return ResponseEntity.ok(vehicleManagementService.getVehicleById(id));
     }
 
+    @PostMapping("/admin/reset")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> resetVehicles(Authentication authentication, HttpServletRequest httpRequest) {
+        dataInitializer.resetVehicles();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @GetMapping("/admin/reset")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> resetVehiclesGet(Authentication authentication, HttpServletRequest httpRequest) {
+        dataInitializer.resetVehicles();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
     public record CreateVehicleRequest(
             String licensePlate,
             String brand,
             String model,
             VehicleType type,
+            Integer year,
             Long mileage,
             String location,
             Double dailyPrice,
-            String imageUrl
+            String imageUrl,
+            List<String> imageGallery
     ) {}
 
     public record UpdateVehicleRequest(
             String brand,
             String model,
             VehicleType type,
+            Integer year,
             String location,
             Double dailyPrice,
-            String imageUrl
+            String imageUrl,
+            List<String> imageGallery
     ) {}
 }
-

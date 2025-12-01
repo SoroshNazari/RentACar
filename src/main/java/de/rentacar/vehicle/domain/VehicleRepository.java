@@ -17,5 +17,5 @@ public interface VehicleRepository {
     List<Vehicle> findByLocation(String location);
     List<Vehicle> findAvailableVehicles(VehicleType type, String location, LocalDate startDate, LocalDate endDate);
     void deleteById(Long id);
+    void deleteAll();
 }
-

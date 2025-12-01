@@ -16,7 +16,15 @@ const LoginPage = () => {
 
     try {
       await api.login(username, password)
-      navigate('/dashboard')
+      
+      // Rollenbasierte Navigation
+      const userRoles = api.getUserRoles()
+      
+      if (userRoles.includes('ROLE_ADMIN') || userRoles.includes('ROLE_EMPLOYEE')) {
+        navigate('/employee')
+      } else {
+        navigate('/dashboard')
+      }
     } catch (err: any) {
       setError(err.response?.data?.error || 'Invalid credentials. Please try again.')
     } finally {

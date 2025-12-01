@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <rect width="800" height="600" fill="#101826"/>
+  <rect x="50" y="420" width="700" height="65" fill="#1f2937"/>
+  <circle cx="240" cy="460" r="52" fill="#e5e7eb"/>
+  <circle cx="560" cy="460" r="52" fill="#e5e7eb"/>
+  <rect x="160" y="300" width="480" height="140" rx="30" fill="#10b981"/>
+  <text x="400" y="200" fill="#e5e7eb" font-size="48" font-family="Arial" text-anchor="middle">Midsize</text>
+</svg>

@@ -66,5 +66,9 @@ public class VehicleRepositoryImpl implements VehicleRepository {
     public void deleteById(Long id) {
         jpaRepository.deleteById(id);
     }
-}
 
+    @Override
+    public void deleteAll() {
+        jpaRepository.deleteAll();
+    }
+}

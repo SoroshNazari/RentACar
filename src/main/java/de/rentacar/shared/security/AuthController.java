@@ -31,11 +31,11 @@ public class AuthController {
                     new UsernamePasswordAuthenticationToken(request.username(), request.password())
             );
 
-            // Benutzer abrufen
+            // Get user
             User user = userRepository.findByUsername(request.username())
-                    .orElseThrow(() -> new BadCredentialsException("Benutzer nicht gefunden"));
+                    .orElseThrow(() -> new BadCredentialsException("User not found"));
 
-            // Antwort erstellen
+            // Create response
             Map<String, Object> response = new HashMap<>();
             response.put("username", user.getUsername());
             response.put("roles", user.getRoles().stream()
@@ -47,7 +47,7 @@ public class AuthController {
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(401).body(Map.of(
                     "authenticated", false,
-                    "error", "Ungültige Anmeldedaten"
+                    "error", "Invalid credentials"
             ));
         }
     }

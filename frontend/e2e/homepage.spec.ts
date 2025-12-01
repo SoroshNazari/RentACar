@@ -3,22 +3,28 @@ import { test, expect } from '@playwright/test'
 test.describe('Homepage', () => {
   test('should display homepage with hero section', async ({ page }) => {
     await page.goto('/')
-
-    await expect(page.locator('text=Premium Car Rental Made Simple')).toBeVisible()
-    await expect(page.locator('text=Browse Vehicles')).toBeVisible()
+    await page.waitForLoadState('domcontentloaded')
+    await expect(page).toHaveTitle(/RentACar/i)
+    await expect(page).toHaveURL('/')
+    await page.getByRole('heading', { name: 'Premium Car Rental Made Simple' }).waitFor({ state: 'visible', timeout: 15000 })
+    await page.getByRole('button', { name: 'Browse Vehicles' }).waitFor({ state: 'visible', timeout: 15000 })
   })
 
   test('should display search bar', async ({ page }) => {
     await page.goto('/')
-
-    await expect(page.locator('input[placeholder*="City, Airport"]')).toBeVisible()
-    await expect(page.locator('button:has-text("Search")')).toBeVisible()
+    await page.waitForLoadState('domcontentloaded')
+    await expect(page).toHaveTitle(/RentACar/i)
+    await expect(page).toHaveURL('/')
+    await page.getByLabel('Location').waitFor({ state: 'visible', timeout: 15000 })
+    await page.getByRole('button', { name: 'Search' }).waitFor({ state: 'visible', timeout: 15000 })
   })
 
   test('should display featured vehicles section', async ({ page }) => {
     await page.goto('/')
-
-    await expect(page.locator('text=Our Featured Vehicles')).toBeVisible()
+    await page.waitForLoadState('domcontentloaded')
+    await expect(page).toHaveTitle(/RentACar/i)
+    await expect(page).toHaveURL('/')
+    await page.getByRole('heading', { name: 'Our Featured Vehicles' }).waitFor({ state: 'visible', timeout: 15000 })
   })
 
   test('should navigate to vehicle detail on book now click', async ({ page }) => {
@@ -31,4 +37,3 @@ test.describe('Homepage', () => {
     }
   })
 })
-

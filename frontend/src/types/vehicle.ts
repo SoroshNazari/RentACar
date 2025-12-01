@@ -26,7 +26,7 @@ export interface Vehicle {
   status: VehicleStatus
   dailyPrice: number
   imageUrl?: string
+  imageGallery?: string[]
   createdAt?: string
   updatedAt?: string
 }
-

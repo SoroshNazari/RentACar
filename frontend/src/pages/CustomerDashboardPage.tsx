@@ -14,35 +14,61 @@ const CustomerDashboardPage = () => {
       navigate('/login')
       return
     }
+    const role = api.getUserRole()
+    if (role !== 'ROLE_CUSTOMER') {
+      setLoading(false)
+      return
+    }
     loadData()
   }, [])
 
   const loadData = async () => {
     try {
-      const username = localStorage.getItem('username') || ''
-      if (username) {
-        const customerData = await api.getCustomerByUsername(username)
-        setCustomer(customerData)
-        const bookingsData = await api.getBookingHistory(customerData.id)
-        setBookings(bookingsData)
+      let customerData: Customer
+      try {
+        customerData = await api.getCustomerMe()
+      } catch (err: any) {
+        const username = localStorage.getItem('username') || ''
+        if (!username) throw err
+        customerData = await api.getCustomerByUsername(username)
       }
+      setCustomer(customerData)
+      const bookingsData = await api.getBookingHistory(customerData.id)
+      setBookings(bookingsData)
     } catch (error) {
       console.error('Failed to load data:', error)
+      setCustomer(null)
+      setBookings([])
     } finally {
       setLoading(false)
     }
   }
 
   const handleCancelBooking = async (bookingId: number) => {
-    if (!confirm('Are you sure you want to cancel this booking?')) return
+    const booking = bookings.find((b) => b.id === bookingId)
+    if (!booking) return
 
-    try {
-      await api.cancelBooking(bookingId)
-      loadData()
-    } catch (error) {
-      console.error('Failed to cancel booking:', error)
-      alert('Failed to cancel booking. Please try again.')
+    const pickup = new Date(booking.pickupDate)
+    const pickupStart = new Date(pickup.getFullYear(), pickup.getMonth(), pickup.getDate(), 0, 0, 0, 0)
+    const oneDayMs = 24 * 60 * 60 * 1000
+    const deadline = pickupStart.getTime() - oneDayMs
+    const now = Date.now()
+    const allowed = now < deadline
+
+    if (!allowed) {
+      alert('Stornierung nur bis 24h vor Abholung möglich.')
+      return
     }
+
+    if (!confirm('Buchung wirklich stornieren?')) return
+
+      try {
+        await api.cancelBooking(bookingId)
+        loadData()
+      } catch (error) {
+        console.error('Failed to cancel booking:', error)
+        alert('Stornierung fehlgeschlagen. Bitte versuche es erneut.')
+      }
   }
 
   if (loading) {
@@ -55,7 +81,16 @@ const CustomerDashboardPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-white mb-8">My Dashboard</h1>
+      <h1 className="text-3xl font-bold text-white mb-8">My Profile</h1>
+
+      {!customer && api.getUserRole() !== 'ROLE_CUSTOMER' && (
+        <div className="card mb-8">
+          <h2 className="text-xl font-semibold text-white mb-2">Mitarbeiterkonto</h2>
+          <p className="text-gray-400">
+            Dieses Profil ist nur für Kunden verfügbar. Bitte nutze die Mitarbeiterfunktionen über das Menü.
+          </p>
+        </div>
+      )}
 
       {/* Customer Info */}
       {customer && (
@@ -127,17 +162,34 @@ const CustomerDashboardPage = () => {
                       </div>
                       <div>
                         <p className="text-gray-400">Total Price</p>
-                        <p className="text-white font-semibold">${booking.totalPrice.toFixed(2)}</p>
+                        <p className="text-white font-semibold">{new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(booking.totalPrice)}</p>
                       </div>
                     </div>
                   </div>
-                  {booking.status === 'BESTÄTIGT' && (
-                    <button
-                      onClick={() => handleCancelBooking(booking.id)}
-                      className="btn-secondary ml-4"
-                    >
-                      Cancel
-                    </button>
+                  {booking.status !== 'STORNIERT' && booking.status !== 'ABGESCHLOSSEN' && (
+                    <div className="flex flex-col items-end">
+                      {(() => {
+                        const pickup = new Date(booking.pickupDate)
+                        const pickupStart = new Date(pickup.getFullYear(), pickup.getMonth(), pickup.getDate(), 0, 0, 0, 0)
+                        const oneDayMs = 24 * 60 * 60 * 1000
+                        const deadline = pickupStart.getTime() - oneDayMs
+                        const canCancel = Date.now() < deadline
+                        return (
+                          <>
+                            <button
+                              onClick={() => handleCancelBooking(booking.id)}
+                              disabled={!canCancel}
+                              className="btn-secondary ml-4 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              Stornieren
+                            </button>
+                            {!canCancel && (
+                              <span className="mt-2 text-xs text-gray-400">Stornierung nur bis 24h vor Abholung</span>
+                            )}
+                          </>
+                        )
+                      })()}
+                    </div>
                   )}
                 </div>
               </div>
@@ -150,4 +202,3 @@ const CustomerDashboardPage = () => {
 }
 
 export default CustomerDashboardPage
-

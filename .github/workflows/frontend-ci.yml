@@ -1,0 +1,55 @@
+name: frontend-ci
+
+on:
+  push:
+    branches: [ Frontend ]
+  pull_request:
+    branches: [ Frontend ]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+      - name: Install frontend deps
+        working-directory: frontend
+        run: npm ci
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Start backend
+        run: |
+          nohup ./gradlew bootRun >/dev/null 2>&1 &
+          for i in {1..60}; do curl -sf http://localhost:8080/api/vehicles && break || sleep 2; done
+      - name: Lint
+        working-directory: frontend
+        run: npm run lint
+      - name: Unit tests with coverage
+        working-directory: frontend
+        run: npm run test:coverage
+      - name: Integration tests
+        working-directory: frontend
+        run: npm run test:integration
+      - name: Install Playwright browsers
+        working-directory: frontend
+        run: npx playwright install --with-deps
+      - name: E2E tests
+        working-directory: frontend
+        run: npm run test:e2e
+      - name: Start dev server
+        working-directory: frontend
+        run: nohup npm run dev -- --host >/dev/null 2>&1 &
+      - name: Wait for dev server
+        run: for i in {1..60}; do curl -sf http://localhost:3000 && break || sleep 2; done
+      - name: Lighthouse
+        working-directory: frontend
+        run: npm run lighthouse
+      - name: Upload Lighthouse report
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-report
+          path: frontend/lighthouse-report.json

@@ -42,8 +42,9 @@ public class BookingService {
      * Use Case: Buchung erstellen mit Verfügbarkeitsprüfung
      */
     @Transactional
-    public Booking createBooking(Long customerId, Long vehicleId, LocalDate pickupDate, 
+    public Booking createBooking(Long customerId, Long vehicleId, LocalDate pickupDate,
                                  LocalDate returnDate, String pickupLocation, String returnLocation,
+                                 boolean insurance, boolean additionalDriver, boolean childSeat,
                                  String username, String ipAddress) {
         // Validierung
         validateDateRange(pickupDate, returnDate);
@@ -62,8 +63,11 @@ public class BookingService {
         }
 
         // Preis berechnen
-        BigDecimal totalPrice = priceCalculationService.calculateTotalPrice(
+        BigDecimal basePrice = priceCalculationService.calculateTotalPrice(
                 vehicle.getType(), pickupDate, returnDate);
+        long days = java.time.temporal.ChronoUnit.DAYS.between(pickupDate, returnDate) + 1;
+        BigDecimal extrasCost = priceCalculationService.calculateExtrasCost(days, insurance, additionalDriver, childSeat);
+        BigDecimal totalPrice = basePrice.add(extrasCost != null ? extrasCost : BigDecimal.ZERO);
 
         // Buchung erstellen
         Booking booking = Booking.builder()
@@ -75,17 +79,130 @@ public class BookingService {
                 .returnLocation(returnLocation)
                 .totalPrice(totalPrice)
                 .status(BookingStatus.ANFRAGE)
+                .insurance(insurance)
+                .additionalDriver(additionalDriver)
+                .childSeat(childSeat)
+                .extrasCost(extrasCost)
                 .build();
 
         Booking savedBooking = bookingRepository.save(booking);
 
-        // Audit-Log
         auditService.logAction(username, "BOOKING_CREATED", "Booking", 
                 savedBooking.getId() != null ? savedBooking.getId().toString() : "NEW", 
                 String.format("Buchung erstellt für Fahrzeug %s", vehicle.getLicensePlate()),
                 ipAddress);
 
+        savedBooking.confirm();
+        vehicle.markAsRented();
+        bookingRepository.save(savedBooking);
+        vehicleRepository.save(vehicle);
+
+        auditService.logAction(username, "BOOKING_CONFIRMED", "Booking",
+                savedBooking.getId() != null ? savedBooking.getId().toString() : "NEW",
+                "Buchung automatisch bestätigt", ipAddress);
+
         return savedBooking;
+    }
+
+    @Transactional
+    public Booking createBooking(Long customerId, Long vehicleId, LocalDate pickupDate,
+                                 LocalDate returnDate, String pickupLocation, String returnLocation,
+                                 String username, String ipAddress) {
+        return createBooking(customerId, vehicleId, pickupDate, returnDate, pickupLocation, returnLocation,
+                false, false, false, username, ipAddress);
+    }
+
+    /**
+     * Führt den Check-out (Fahrzeugübergabe) für eine Buchung durch.
+     * Warum: Mitarbeiter erfassen Kilometerstand und Zustand bei Übergabe.
+     */
+    public Booking checkout(Long bookingId, java.math.BigDecimal mileage, String notes, String username) {
+        if (mileage == null || mileage.compareTo(java.math.BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Mileage must be > 0");
+        }
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
+        if (booking.getStatus() != de.rentacar.booking.domain.BookingStatus.BESTÄTIGT) {
+            throw new IllegalStateException("Check-out only allowed for confirmed bookings");
+        }
+        // Check if booking has already been checked out
+        if (booking.getCheckoutTime() != null) {
+            throw new IllegalStateException("Booking has already been checked out");
+        }
+        var vehicle = booking.getVehicle();
+        if (vehicle == null) {
+            throw new IllegalStateException("Vehicle data missing");
+        }
+        if (vehicle.getMileage() != null && mileage.compareTo(java.math.BigDecimal.valueOf(vehicle.getMileage())) < 0) {
+            throw new IllegalArgumentException("Mileage cannot be less than current vehicle mileage");
+        }
+        booking.setCheckoutTime(java.time.LocalDateTime.now());
+        booking.setCheckoutMileage(mileage);
+        booking.setCheckoutNotes(notes);
+        vehicle.updateMileage(mileage.longValue());
+        // Fahrzeug bleibt im Status 'RENTED' gemäß bestehender Logik.
+        return bookingRepository.save(booking);
+    }
+
+    /**
+     * Liefert bestätigte Buchungen für einen Abholtag (mit Fahrzeugdaten).
+     */
+    public java.util.List<Booking> getPickupsForDate(LocalDate date) {
+        return bookingRepository.findConfirmedByPickupDateWithVehicle(date);
+    }
+
+    public java.util.List<Booking> getRequestsForDate(LocalDate date) {
+        return bookingRepository.findRequestsByPickupDateWithVehicle(date);
+    }
+
+    public Booking checkin(Long bookingId, java.math.BigDecimal mileage, boolean damagePresent, String damageNotes, java.math.BigDecimal damageCost, java.time.LocalDateTime actualReturnTime) {
+        if (mileage == null || mileage.compareTo(java.math.BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Kilometerstand muss > 0 sein");
+        }
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Buchung nicht gefunden"));
+        
+        // Check if booking has already been checked in
+        if (booking.getCheckinTime() != null) {
+            throw new IllegalStateException("Booking has already been checked in");
+        }
+        
+        // Check if booking has been checked out (only checked out bookings can be checked in)
+        if (booking.getCheckoutTime() == null) {
+            throw new IllegalStateException("Booking must first be checked out");
+        }
+        
+        var vehicle = booking.getVehicle();
+        if (vehicle == null) {
+            throw new IllegalStateException("Vehicle data missing");
+        }
+        
+        // Check if mileage is greater than checkout mileage
+        if (booking.getCheckoutMileage() != null && mileage.compareTo(booking.getCheckoutMileage()) < 0) {
+            throw new IllegalArgumentException("Mileage cannot be less than checkout mileage");
+        }
+        
+        long days = java.time.temporal.ChronoUnit.DAYS.between(booking.getPickupDate(), booking.getReturnDate()) + 1;
+        java.math.BigDecimal extraMileage = priceCalculationService.calculateExtraMileageCost(days, booking.getCheckoutMileage(), mileage);
+        java.math.BigDecimal lateFee = priceCalculationService.calculateLateFee(booking.getReturnDate(), actualReturnTime);
+        java.math.BigDecimal dmgCost = damagePresent ? (damageCost != null ? damageCost : java.math.BigDecimal.ZERO) : java.math.BigDecimal.ZERO;
+
+        booking.setCheckinTime(actualReturnTime);
+        booking.setCheckinMileage(mileage);
+        booking.setDamagePresent(damagePresent);
+        booking.setDamageNotes(damageNotes);
+        booking.setDamageCost(dmgCost);
+        booking.setExtraMileageCost(extraMileage);
+        booking.setLateFee(lateFee);
+        booking.setStatus(de.rentacar.booking.domain.BookingStatus.ABGESCHLOSSEN);
+
+        vehicle.updateMileage(mileage.longValue());
+        vehicle.markAsAvailable();
+        return bookingRepository.save(booking);
+    }
+
+    public java.util.List<Booking> getReturnsForDate(LocalDate date) {
+        return bookingRepository.findConfirmedByReturnDateWithVehicle(date);
     }
 
     /**
@@ -139,7 +256,7 @@ public class BookingService {
      */
     @Transactional(readOnly = true)
     public List<Booking> getBookingHistory(Long customerId) {
-        return bookingRepository.findByCustomerId(customerId);
+        return bookingRepository.findByCustomerIdWithVehicle(customerId);
     }
 
     private void validateDateRange(LocalDate startDate, LocalDate endDate) {
@@ -154,4 +271,3 @@ public class BookingService {
         }
     }
 }
-

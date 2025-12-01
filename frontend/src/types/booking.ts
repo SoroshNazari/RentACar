@@ -23,6 +23,16 @@ export interface Booking {
   status: BookingStatus
   totalPrice: number
   cancellationDate?: string
+  checkoutTime?: string
+  checkoutMileage?: number
+  checkoutNotes?: string
+  checkinTime?: string
+  checkinMileage?: number
+  damagePresent?: boolean
+  damageNotes?: string
+  damageCost?: number
+  extraMileageCost?: number
+  lateFee?: number
   createdAt?: string
   updatedAt?: string
 }
@@ -34,5 +44,7 @@ export interface CreateBookingRequest {
   returnDate: string
   pickupLocation: string
   returnLocation: string
+  insurance?: boolean
+  additionalDriver?: boolean
+  childSeat?: boolean
 }
-

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -46,6 +47,9 @@ public class SecurityConfig {
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/api/public/**").permitAll()
                 .requestMatchers("/api/auth/login").permitAll() // Login-Endpunkt öffentlich
+                .requestMatchers(HttpMethod.GET, "/api/assets/image").permitAll()
+                .requestMatchers(HttpMethod.GET, "/images/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/assets/**").permitAll()
                 
                 // Kunden-Endpunkte
                 .requestMatchers("/api/customers/register").permitAll()
@@ -55,11 +59,11 @@ public class SecurityConfig {
                 .requestMatchers("/api/bookings/search").permitAll() // Öffentliche Suche
                 .requestMatchers("/api/bookings/**").hasAnyRole("CUSTOMER", "EMPLOYEE", "ADMIN")
                 
-                // Fahrzeug-Endpunkte (spezifische Patterns zuerst!)
-                .requestMatchers("/api/vehicles/{id}/out-of-service").hasAnyRole("EMPLOYEE", "ADMIN")
-                .requestMatchers("/api/vehicles/{id}").permitAll() // Öffentliche Fahrzeugdetails
-                .requestMatchers("/api/vehicles").permitAll() // Öffentliche Liste aller Fahrzeuge
-                .requestMatchers("/api/vehicles/**").hasAnyRole("EMPLOYEE", "ADMIN") // Verwaltung nur für Mitarbeiter
+                // Fahrzeug-Endpunkte
+                .requestMatchers(HttpMethod.GET, "/api/vehicles").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/vehicles/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/vehicles").hasAnyRole("EMPLOYEE", "ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/vehicles/**").hasAnyRole("EMPLOYEE", "ADMIN")
                 
                 // Vermietungs-Endpunkte (nur Mitarbeiter und Admin)
                 .requestMatchers("/api/rentals/**").hasAnyRole("EMPLOYEE", "ADMIN")
@@ -76,4 +80,3 @@ public class SecurityConfig {
         return http.build();
     }
 }
-

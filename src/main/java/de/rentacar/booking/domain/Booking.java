@@ -49,6 +49,54 @@ public class Booking extends BaseEntity {
 
     private LocalDateTime cancellationDate;
 
+    private LocalDateTime checkoutTime;
+
+    @Column(precision = 10, scale = 2)
+    private java.math.BigDecimal checkoutMileage;
+
+    @Column(length = 1024)
+    private String checkoutNotes;
+
+    private LocalDateTime checkinTime;
+
+    @Column(precision = 10, scale = 2)
+    private java.math.BigDecimal checkinMileage;
+
+    @Column
+    @Builder.Default
+    private Boolean damagePresent = false;
+
+    @Column(length = 1024)
+    private String damageNotes;
+
+    @Column(precision = 10, scale = 2)
+    @Builder.Default
+    private BigDecimal damageCost = BigDecimal.ZERO;
+
+    @Column(precision = 10, scale = 2)
+    @Builder.Default
+    private BigDecimal extraMileageCost = BigDecimal.ZERO;
+
+    @Column(precision = 10, scale = 2)
+    @Builder.Default
+    private BigDecimal lateFee = BigDecimal.ZERO;
+
+    @Column
+    @Builder.Default
+    private Boolean insurance = false;
+
+    @Column
+    @Builder.Default
+    private Boolean additionalDriver = false;
+
+    @Column
+    @Builder.Default
+    private Boolean childSeat = false;
+
+    @Column(precision = 10, scale = 2)
+    @Builder.Default
+    private BigDecimal extrasCost = BigDecimal.ZERO;
+
     /**
      * Domain-Methode: Buchung bestätigen
      */
@@ -105,4 +153,3 @@ public class Booking extends BaseEntity {
                this.returnDate.isAfter(startDate.minusDays(1));
     }
 }
-

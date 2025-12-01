@@ -12,8 +12,13 @@ public interface BookingRepository {
     Optional<Booking> findById(Long id);
     List<Booking> findAll();
     List<Booking> findByCustomerId(Long customerId);
+    List<Booking> findByCustomerIdWithVehicle(Long customerId);
     List<Booking> findByVehicleId(Long vehicleId);
     List<Booking> findOverlappingBookings(Long vehicleId, LocalDate startDate, LocalDate endDate);
     List<Booking> findActiveBookingsByVehicle(Long vehicleId);
-}
 
+    List<Booking> findConfirmedByPickupDateWithVehicle(java.time.LocalDate date);
+    List<Booking> findConfirmedByReturnDateWithVehicle(java.time.LocalDate date);
+    List<Booking> findActiveByPickupDateWithVehicle(java.time.LocalDate date);
+    List<Booking> findRequestsByPickupDateWithVehicle(java.time.LocalDate date);
+}

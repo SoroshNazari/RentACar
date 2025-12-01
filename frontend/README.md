@@ -33,7 +33,7 @@ frontend/
 ### Prerequisites
 
 - Node.js 18+ and npm
-- Backend server running on `http://localhost:8081`
+ - Backend server running on `http://localhost:8080`
 
 ### Installation
 
@@ -121,7 +121,7 @@ The frontend communicates with the backend API through the `api` client in `src/
 Create a `.env` file for environment-specific configuration:
 
 ```env
-VITE_API_BASE_URL=http://localhost:8081
+VITE_API_BASE_URL=http://localhost:8080/api
 ```
 
 ## Browser Support
@@ -134,4 +134,3 @@ VITE_API_BASE_URL=http://localhost:8081
 ## License
 
 Copyright © 2024 RentACar. All rights reserved.
-

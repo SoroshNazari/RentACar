@@ -1,4 +1,4 @@
-import { Outlet, Link, useNavigate } from 'react-router-dom'
+import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { api } from '@/lib/api'
 
@@ -6,11 +6,16 @@ const Layout = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [userRole, setUserRole] = useState<string | null>(null)
   const navigate = useNavigate()
+  const location = useLocation()
 
   useEffect(() => {
     setIsAuthenticated(api.isAuthenticated())
     setUserRole(api.getUserRole())
   }, [])
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+  }, [location.pathname])
 
   const handleLogout = () => {
     api.logout()
@@ -31,15 +36,6 @@ const Layout = () => {
               <span className="text-xl font-bold text-white">RentACar</span>
             </Link>
             <div className="flex items-center gap-6">
-              <Link to="/vehicles" className="text-gray-300 hover:text-white transition-colors">
-                Vehicles
-              </Link>
-              <Link to="/" className="text-gray-300 hover:text-white transition-colors">
-                Locations
-              </Link>
-              <Link to="/" className="text-gray-300 hover:text-white transition-colors">
-                About Us
-              </Link>
               {isAuthenticated ? (
                 <>
                   {userRole === 'ROLE_CUSTOMER' && (
@@ -47,9 +43,28 @@ const Layout = () => {
                       to="/dashboard"
                       className="text-gray-300 hover:text-white transition-colors"
                     >
-                      Dashboard
+                      Profile
                     </Link>
                   )}
+                  {(userRole === 'ROLE_EMPLOYEE' || userRole === 'ROLE_ADMIN') && (
+                    <>
+                      <Link
+                        to="/employee"
+                        className="text-gray-300 hover:text-white transition-colors"
+                      >
+                        Employee Check-out
+                      </Link>
+                      <Link
+                        to="/employee/checkin"
+                        className="text-gray-300 hover:text-white transition-colors"
+                      >
+                        Employee Check-in
+                      </Link>
+                    </>
+                  )}
+                  <Link to="/about" className="text-gray-300 hover:text-white transition-colors">
+                    About Us
+                  </Link>
                   <button
                     onClick={handleLogout}
                     className="text-gray-300 hover:text-white transition-colors"
@@ -59,6 +74,9 @@ const Layout = () => {
                 </>
               ) : (
                 <>
+                  <Link to="/about" className="text-gray-300 hover:text-white transition-colors">
+                    About Us
+                  </Link>
                   <Link
                     to="/login"
                     className="text-gray-300 hover:text-white transition-colors"
@@ -95,7 +113,7 @@ const Layout = () => {
               <h3 className="font-semibold text-white mb-4">COMPANY</h3>
               <ul className="space-y-2 text-sm text-gray-400">
                 <li>
-                  <Link to="/" className="hover:text-white transition-colors">
+                  <Link to="/about" className="hover:text-white transition-colors">
                     About Us
                   </Link>
                 </li>
@@ -157,4 +175,3 @@ const Layout = () => {
 }
 
 export default Layout
-
