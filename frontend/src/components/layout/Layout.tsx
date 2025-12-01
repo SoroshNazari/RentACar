@@ -1,6 +1,6 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { api } from '@/lib/api'
+import { api } from '@/services/api'
 
 const Layout = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false)

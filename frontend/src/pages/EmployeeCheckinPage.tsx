@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { api } from '@/lib/api'
+import { api } from '@/services/api'
 import type { Booking } from '@/types/booking'
 
 const todayISO = () => new Date().toISOString().slice(0, 10)

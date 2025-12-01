@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 describe('Integration: Backend API', () => {
-  const baseUrl = 'http://localhost:8080/api'
+  const baseUrl = 'http://localhost:8081/api'
 
   let backendHealthy = false
 

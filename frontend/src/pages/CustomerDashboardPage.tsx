@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { api } from '@/lib/api'
+import { api } from '@/services/api'
 import type { Booking, Customer } from '@/types'
 
 const CustomerDashboardPage = () => {

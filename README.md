@@ -1,171 +1,215 @@
-# RentACar - Autovermietung Backend
+# RentACar - Professionelle Autovermietungsplattform
 
-Ein modernes Backend-System für eine Autovermietung, implementiert mit **Domain-Driven Design (DDD)** und **Spring Boot**.
+Eine moderne, skalierbare Autovermietungsplattform mit klaren Trennungen zwischen Frontend und Backend.
 
-## Technologie-Stack
-
-- **Java 17**
-- **Gradle** (Build-Tool)
-- **Spring Boot 3.2.0**
-  - Spring Web (REST API)
-  - Spring Data JPA
-  - Spring Security (RBAC)
-- **H2 Database** (In-Memory)
-- **JUnit 5** (Testing)
-- **Lombok** (Code-Reduktion)
-- **Jasypt** (Verschlüsselung für DSGVO-Konformität)
-
-## Architektur
-
-Das Projekt folgt strikt den Prinzipien des **Domain-Driven Design (DDD)** mit klarer Trennung in:
-
-### Bounded Contexts
-
-1. **Vehicle Context** - Fahrzeugverwaltung
-2. **Customer Context** - Kundenverwaltung
-3. **Booking Context** - Buchungsverwaltung
-4. **Rental Context** - Vermietungsprozess
-
-### Schichtenarchitektur
-
-Jeder Bounded Context ist in folgende Schichten unterteilt:
-
-- **Domain Layer**: Aggregates, Entities, Value Objects, Domain Services, Repository Interfaces
-- **Application Layer**: Application Services (Use Cases), DTOs
-- **Infrastructure Layer**: JPA Entities, Repository Implementations, External Services
-- **Web Layer**: REST Controllers
-
-## Funktionale Anforderungen
-
-### 1. Fahrzeugverwaltung
-- Verwaltung von Fahrzeugtypen (Kleinwagen, SUV, etc.)
-- Eigenschaften: Kennzeichen, Marke, Modell, Kilometerstand, Standort, Status
-- Mitarbeiter können Fahrzeuge hinzufügen, bearbeiten und außer Betrieb setzen
-
-### 2. Kundenverwaltung
-- Speicherung von Kundendaten (Name, Adresse, Führerscheinnummer, Kontaktdaten)
-- Kunden können sich registrieren und ihre Daten ändern
-- Anzeige der Buchungshistorie pro Kunde
-- **DSGVO-konforme Verschlüsselung** aller sensiblen Daten
-
-### 3. Buchungsverwaltung
-- Kunden können Fahrzeuge suchen (Zeitraum, Typ, Standort)
-- **Robuste Verfügbarkeitsprüfung** zur Verhinderung von Überbuchungen
-- Buchung enthält: Kunde, Fahrzeug, Abhol-/Rückgabedatum, Orte, Gesamtpreis
-- Kunden können bis 24h vor Abholung stornieren
-- Preisberechnung basierend auf Kategorie und Dauer
-
-### 4. Vermietungsprozess
-- Mitarbeiter führen Check-out (Übergabe, Kilometerstand, Zustand) durch
-- Mitarbeiter führen Check-in (Rückgabe, Kilometerstand, Schadensprüfung) durch
-- Erstellung von Schadensberichten
-- Berechnung von Zusatzkosten (Verspätung, Schäden, etc.)
-
-## Nicht-funktionale Anforderungen
-
-### Sicherheit (NFR3, NFR4, NFR5)
-- **RBAC (Rollenbasierte Zugriffskontrolle)**:
-  - `ROLE_CUSTOMER` - Kunde
-  - `ROLE_EMPLOYEE` - Mitarbeiter
-  - `ROLE_ADMIN` - Administrator
-- **Verschlüsselung**: Kundendaten werden verschlüsselt gespeichert (DSGVO-konform)
-- **Audit-Log**: Alle sicherheitsrelevanten Aktionen werden protokolliert
-
-### Performance (NFR1)
-- Fahrzeugsuche optimiert für < 2 Sekunden
-
-### Wartbarkeit (NFR8)
-- Unit-Tests mit hoher Code-Abdeckung (Ziel: 80%)
-- Klare DDD-Struktur für einfache Wartung
-
-## Projektstruktur
+## 🏗️ Projektstruktur
 
 ```
-src/main/java/de/rentacar/
-├── RentACarApplication.java          # Spring Boot Application
-├── shared/                           # Shared Kernel
-│   ├── domain/                       # BaseEntity, AuditLog, AuditService
-│   ├── infrastructure/               # AuditLogRepository
-│   └── security/                     # Security Config, User, Roles
-├── vehicle/                          # Vehicle Bounded Context
-│   ├── domain/                       # Vehicle, VehicleType, VehicleStatus, LicensePlate
-│   ├── application/                  # VehicleManagementService
-│   ├── infrastructure/               # VehicleRepositoryImpl, VehicleJpaRepository
-│   └── web/                          # VehicleController
-├── customer/                         # Customer Bounded Context
-│   ├── domain/                       # Customer, EncryptedString
-│   ├── application/                  # CustomerService
-│   ├── infrastructure/               # CustomerRepositoryImpl, EncryptionService
-│   └── web/                          # CustomerController
-├── booking/                          # Booking Bounded Context
-│   ├── domain/                       # Booking, BookingStatus, AvailabilityService, PriceCalculationService
-│   ├── application/                  # BookingService
-│   ├── infrastructure/               # BookingRepositoryImpl, BookingJpaRepository
-│   └── web/                          # BookingController
-└── rental/                           # Rental Bounded Context
-    ├── domain/                       # Rental, RentalStatus, DamageReport
-    ├── application/                  # RentalService
-    ├── infrastructure/               # RentalRepositoryImpl, RentalJpaRepository
-    └── web/                          # RentalController
+rentacar/
+├── backend/                 # Spring Boot Backend
+│   ├── src/
+│   │   ├── controllers/     # API-Endpunkte
+│   │   ├── models/          # Datenmodelle
+│   │   ├── services/        # Geschäftslogik
+│   │   ├── config/          # Konfigurationen
+│   │   └── middlewares/     # Custom Middleware
+│   ├── tests/               # Unit- und Integrationstests
+│   └── build.gradle         # Gradle-Konfiguration
+├── frontend/                # React TypeScript Frontend
+│   ├── src/
+│   │   ├── components/      # UI-Komponenten
+│   │   ├── pages/           # Seitenstruktur
+│   │   ├── store/           # State Management
+│   │   ├── services/        # API-Kommunikation
+│   │   ├── assets/          # Statische Dateien
+│   │   └── styles/          # Globale Styles
+│   ├── tests/               # Komponententests
+│   └── package.json         # Frontend-Abhängigkeiten
+├── shared/                  # Gemeinsame Ressourcen
+│   ├── types/               # Gemeinsame Typdefinitionen
+│   └── utils/               # Gemeinsame Utilities
+├── docker/                  # Container-Konfigurationen
+├── scripts/                 # Build- und Deployment-Skripte
+└── docs/                    # Projekt-Dokumentation
 ```
 
-## API-Endpunkte
+## 🚀 Schnellstart
 
-### Öffentliche Endpunkte
-- `POST /api/customers/register` - Kundenregistrierung
+### Voraussetzungen
 
-### Kunden-Endpunkte (ROLE_CUSTOMER, ROLE_EMPLOYEE, ROLE_ADMIN)
-- `GET /api/bookings/search` - Fahrzeuge suchen
-- `POST /api/bookings` - Buchung erstellen
-- `PUT /api/bookings/{id}/cancel` - Buchung stornieren
-- `GET /api/bookings/customer/{customerId}` - Buchungshistorie
-- `PUT /api/customers/{id}` - Kundendaten aktualisieren
+- Java 17+
+- Node.js 18+
+- Docker (optional)
 
-### Mitarbeiter-Endpunkte (ROLE_EMPLOYEE, ROLE_ADMIN)
-- `POST /api/vehicles` - Fahrzeug hinzufügen
-- `PUT /api/vehicles/{id}` - Fahrzeug bearbeiten
-- `PUT /api/vehicles/{id}/out-of-service` - Fahrzeug außer Betrieb setzen
-- `POST /api/rentals/checkout` - Check-out durchführen
-- `POST /api/rentals/{id}/checkin` - Check-in durchführen
-- `POST /api/rentals/{id}/damage` - Schadensbericht erstellen
-
-## Konfiguration
-
-### H2 Database
-Die H2-Konsole ist unter `http://localhost:8080/h2-console` verfügbar:
-- JDBC URL: `jdbc:h2:mem:rentacardb`
-- Username: `sa`
-- Password: (leer)
-
-### Verschlüsselung
-Die Verschlüsselung für Kundendaten wird über Jasypt konfiguriert. Das Passwort kann über die Umgebungsvariable `JASYPT_ENCRYPTOR_PASSWORD` gesetzt werden (Standard: `rentacar-secret-key`).
-
-## Tests ausführen
+### Installation
 
 ```bash
-./gradlew test
+# Repository klonen
+git clone https://github.com/your-org/rentacar.git
+cd rentacar
+
+# Dependencies installieren
+npm install
+
+# Backend Dependencies
+cd backend && ./gradlew build && cd ..
+
+# Frontend Dependencies
+cd frontend && npm install && cd ..
 ```
 
-## Anwendung starten
+### Entwicklung
 
 ```bash
-./gradlew bootRun
+# Beide Anwendungen gleichzeitig starten
+npm run dev
+
+# Oder einzeln starten
+npm run dev:backend  # Backend auf Port 8080
+npm run dev:frontend # Frontend auf Port 3000
 ```
 
-Die Anwendung läuft dann auf `http://localhost:8080`.
+### Build
 
-## Wichtige Implementierungsdetails
+```bash
+# Kompletten Build ausführen
+npm run build
 
-### Verfügbarkeitsprüfung (Überbuchungsverhinderung)
-Die `AvailabilityService` prüft vor jeder Buchungserstellung und -bestätigung, ob das Fahrzeug im angegebenen Zeitraum verfügbar ist. Dies verhindert Überbuchungen durch Prüfung auf überlappende bestätigte Buchungen.
+# Tests mit Coverage
+npm run test:coverage
+```
 
-### Verschlüsselung
-Alle sensiblen Kundendaten (E-Mail, Telefon, Adresse, Führerscheinnummer) werden mit Jasypt verschlüsselt gespeichert, um DSGVO-Konformität zu gewährleisten.
+## 🧪 Testing
 
-### Audit-Logging
-Alle sicherheitsrelevanten Aktionen (Buchungserstellung, -bestätigung, -stornierung, Fahrzeugverwaltung, etc.) werden im Audit-Log protokolliert.
+### Backend Tests
+```bash
+cd backend
+./gradlew test                    # Unit Tests
+./gradlew jacocoTestReport       # Coverage Report
+```
 
-## Lizenz
+### Frontend Tests
+```bash
+cd frontend
+npm run test                      # Unit Tests
+npm run test:coverage            # Coverage Report
+npm run test:e2e                 # End-to-End Tests
+```
 
-Dieses Projekt wurde für akademische Zwecke erstellt.
+### Alle Tests
+```bash
+npm run test                      # Alle Tests
+npm run test:coverage            # Alle Tests mit Coverage
+```
 
+## 🐳 Docker Deployment
+
+```bash
+# Docker Images bauen
+npm run docker:build
+
+# Anwendung starten
+npm run docker:up
+
+# Anwendung stoppen
+npm run docker:down
+```
+
+## 📊 Code Qualität
+
+### Linting
+```bash
+npm run lint                      # Alle Linting-Checks
+npm run lint:backend             # Backend Linting
+npm run lint:frontend            # Frontend Linting
+```
+
+### Code Coverage
+- Backend: `backend/build/reports/jacoco/test/html/index.html`
+- Frontend: `frontend/coverage/lcov-report/index.html`
+
+## 🔧 Konfiguration
+
+### Backend Konfiguration
+Die Backend-Konfiguration befindet sich in `backend/src/config/`. 
+
+Wichtige Einstellungen:
+- `application.properties` - Haupteinstellungen
+- `SecurityConfig.java` - Sicherheitskonfiguration
+- `application-{env}.properties` - Umgebungsspezifische Einstellungen
+
+### Frontend Konfiguration
+Die Frontend-Konfiguration befindet sich im `frontend/` Verzeichnis.
+
+Wichtige Dateien:
+- `vite.config.ts` - Vite Build-Konfiguration
+- `tailwind.config.js` - Tailwind CSS Konfiguration
+- `.env` - Umgebungsvariablen
+
+## 📚 API Dokumentation
+
+Die API-Dokumentation ist verfügbar unter:
+- Lokale Entwicklung: http://localhost:8080/swagger-ui.html
+- Produktion: https://your-domain.com/api/swagger-ui.html
+
+## 🔒 Sicherheit
+
+- JWT-basierte Authentifizierung
+- HTTPS in Produktion
+- Input Validierung
+- SQL Injection Schutz
+- XSS Schutz
+
+## 📈 Monitoring
+
+- Health Checks: `/actuator/health`
+- Metriken: `/actuator/metrics`
+- Logging: Konfigurierbar über application.properties
+
+## 🤝 Beitragen
+
+1. Fork erstellen
+2. Feature Branch erstellen (`git checkout -b feature/amazing-feature`)
+3. Commits erstellen (`git commit -m 'Add amazing feature'`)
+4. Push zum Branch (`git push origin feature/amazing-feature`)
+5. Pull Request erstellen
+
+## 📝 Entwicklungsrichtlinien
+
+### Code Style
+- Java: Google Java Style Guide
+- TypeScript: Airbnb Style Guide
+- Consistente Einrückung (2 Spaces)
+- Aussagekräftige Variablennamen
+
+### Testing
+- Mindestens 80% Code Coverage
+- Unit Tests für alle Services
+- Integration Tests für kritische Pfade
+- E2E Tests für wichtige User Flows
+
+### Dokumentation
+- Javadoc für alle öffentlichen Methoden
+- README für neue Features
+- API Dokumentation aktuell halten
+
+## 📄 Lizenz
+
+Dieses Projekt ist unter der MIT-Lizenz lizenziert - siehe [LICENSE](LICENSE) Datei für Details.
+
+## 👥 Team
+
+- Backend Team: [Team-Mitglieder]
+- Frontend Team: [Team-Mitglieder]
+- DevOps Team: [Team-Mitglieder]
+
+## 📞 Support
+
+Bei Fragen oder Problemen:
+- Erstelle ein Issue im Repository
+- Kontaktiere das Entwicklungsteam
+- Dokumentation prüfen
+
+---
+
+**Happy Coding! 🚀**

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { api } from '@/lib/api'
+import { api } from '@/services/api'
 import type { Vehicle, VehicleType } from '@/types'
 
 const formatCurrency = (amount: number) =>

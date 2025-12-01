@@ -1,11 +1,12 @@
 export default {
   preset: 'ts-jest',
   testEnvironment: 'jsdom',
-  roots: ['<rootDir>/src'],
+  roots: ['<rootDir>/src', '<rootDir>/tests'],
   testMatch: ['**/__tests__/**/*.ts?(x)', '**/?(*.)+(spec|test).ts?(x)'],
   testPathIgnorePatterns: ['<rootDir>/src/integration/'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^@shared/(.*)$': '<rootDir>/../shared/$1',
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
   },
   setupFilesAfterEnv: ['<rootDir>/src/test/setup.ts'],
@@ -17,7 +18,7 @@ export default {
         publicPath: '<rootDir>/public/test-report',
         filename: 'index.html',
         expand: true,
-        pageTitle: 'Frontend Test Report',
+        pageTitle: 'RentACar Frontend Test Report',
       },
     ],
   ],

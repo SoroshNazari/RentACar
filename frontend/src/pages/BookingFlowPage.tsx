@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom'
-import { api } from '@/lib/api'
+import { api } from '@/services/api'
 import ProgressIndicator from '@/components/layout/ProgressIndicator'
 import type { Vehicle, Customer } from '@/types'
 

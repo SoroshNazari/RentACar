@@ -1,0 +1,16 @@
+{
+  "name": "rentacar-backend",
+  "version": "1.0.0",
+  "description": "RentACar Backend API",
+  "main": "src/main/java/de/rentacar/RentACarApplication.java",
+  "scripts": {
+    "build": "./gradlew clean build",
+    "test": "./gradlew test",
+    "test:coverage": "./gradlew jacocoTestReport",
+    "dev": "./gradlew bootRun",
+    "lint": "./gradlew check"
+  },
+  "keywords": ["spring", "boot", "java", "backend", "api"],
+  "author": "RentACar Team",
+  "license": "MIT"
+}

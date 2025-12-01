@@ -1,0 +1,53 @@
+{
+  "name": "rentacar-monorepo",
+  "version": "1.0.0",
+  "description": "RentACar - Professionelle Autovermietungsplattform",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:backend": "cd backend && ./gradlew clean build",
+    "build:frontend": "cd frontend && npm run build",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "cd backend && ./gradlew test",
+    "test:frontend": "cd frontend && npm run test",
+    "test:coverage": "npm run test:coverage:backend && npm run test:coverage:frontend",
+    "test:coverage:backend": "cd backend && ./gradlew jacocoTestReport",
+    "test:coverage:frontend": "cd frontend && npm run test:coverage",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && ./gradlew bootRun",
+    "dev:frontend": "cd frontend && npm run dev",
+    "lint": "npm run lint:backend && npm run lint:frontend",
+    "lint:backend": "cd backend && ./gradlew check",
+    "lint:frontend": "cd frontend && npm run lint",
+    "docker:build": "docker-compose -f docker/docker-compose.yml build",
+    "docker:up": "docker-compose -f docker/docker-compose.yml up -d",
+    "docker:down": "docker-compose -f docker/docker-compose.yml down",
+    "scripts:build": "bash scripts/build/build-all.sh",
+    "scripts:test": "bash scripts/test/run-all-tests.sh",
+    "scripts:deploy": "bash scripts/deploy/deploy.sh"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/rentacar.git"
+  },
+  "keywords": [
+    "car-rental",
+    "spring-boot",
+    "react",
+    "typescript",
+    "fullstack"
+  ],
+  "author": "RentACar Team",
+  "license": "MIT"
+}
