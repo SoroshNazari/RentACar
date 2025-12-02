@@ -16,17 +16,18 @@ const LoginPage = () => {
 
     try {
       await api.login(username, password)
-      
+
       // Rollenbasierte Navigation
       const userRoles = api.getUserRoles()
-      
+
       if (userRoles.includes('ROLE_ADMIN') || userRoles.includes('ROLE_EMPLOYEE')) {
         navigate('/employee')
       } else {
         navigate('/dashboard')
       }
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Invalid credentials. Please try again.')
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } }
+      setError(e.response?.data?.error || 'Ungültige Anmeldedaten. Bitte versuche es erneut.')
     } finally {
       setLoading(false)
     }
@@ -42,8 +43,8 @@ const LoginPage = () => {
             </div>
             <span className="text-2xl font-bold text-white">RentACar</span>
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Welcome Back</h1>
-          <p className="text-gray-400">Sign in to your account</p>
+          <h1 className="text-3xl font-bold text-white mb-2">Willkommen zurück</h1>
+          <p className="text-gray-200">Melde dich in deinem Konto an</p>
         </div>
 
         <div className="card">
@@ -54,25 +55,33 @@ const LoginPage = () => {
               </div>
             )}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Username</label>
+              <label htmlFor="username" className="block text-sm font-medium text-gray-200 mb-2">
+                Benutzername
+              </label>
               <input
+                id="username"
                 type="text"
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                onChange={e => setUsername(e.target.value)}
                 required
                 className="input-field"
-                placeholder="Enter your username"
+                placeholder="Dein Benutzername"
+                aria-required="true"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Password</label>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-200 mb-2">
+                Passwort
+              </label>
               <input
+                id="password"
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={e => setPassword(e.target.value)}
                 required
                 className="input-field"
-                placeholder="Enter your password"
+                placeholder="Dein Passwort"
+                aria-required="true"
               />
             </div>
             <button
@@ -80,15 +89,15 @@ const LoginPage = () => {
               disabled={loading}
               className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? 'Anmeldung läuft...' : 'Anmelden'}
             </button>
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-gray-400">
-              Don't have an account?{' '}
-              <Link to="/register" className="text-primary-600 hover:text-primary-700">
-                Sign up
+            <p className="text-gray-200">
+              Noch kein Konto?{' '}
+              <Link to="/register" className="text-primary-500 hover:text-primary-400 underline">
+                Registrieren
               </Link>
             </p>
           </div>
@@ -100,3 +109,10 @@ const LoginPage = () => {
 
 export default LoginPage
 
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default LoginPage

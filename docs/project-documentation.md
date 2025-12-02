@@ -27,6 +27,8 @@
 13. [Wartung & Erweiterung](#13-wartung--erweiterung)
 14. [Anhang](#14-anhang)
 
+> **📚 Technologie-Dokumentation:** Für detaillierte Informationen zu den verwendeten Technologien (Spring Boot, React, Vite, Playwright, Jest) siehe [Technologie-Dokumentation](./technology-documentation.md)
+
 ---
 
 ## 1. Projektübersicht
@@ -1243,5 +1245,7 @@ Dieses Projekt wurde für akademische Zwecke erstellt.
 ---
 
 **Ende der Dokumentation**
+
+
 
 

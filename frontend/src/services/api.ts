@@ -14,17 +14,35 @@ const API_BASE_URL = '/api'
 export class ApiClient {
   private client: AxiosInstance
 
+  private normalizePlate(val: unknown): string {
+    if (val == null) return ''
+    if (typeof val === 'string') return val
+    if (typeof val === 'object') {
+      const maybe = val as { value?: unknown; encryptedValue?: unknown }
+      if (typeof maybe.value === 'string') return maybe.value
+      if (maybe.encryptedValue != null) return '[ENCRYPTED]'
+    }
+    return String(val)
+  }
+
+  private normalizeVehicle(v: Vehicle | (Vehicle & { licensePlate?: unknown })): Vehicle {
+    const lp = (v as unknown as { licensePlate?: unknown }).licensePlate
+    return { ...v, licensePlate: this.normalizePlate(lp) }
+  }
+
   constructor(client?: AxiosInstance) {
-    const created = client || (axios.create?.({
-      baseURL: API_BASE_URL,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }) as AxiosInstance | undefined)
-    this.client = (created || (axios as unknown as AxiosInstance))
+    const created =
+      client ||
+      (axios.create?.({
+        baseURL: API_BASE_URL,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }) as AxiosInstance | undefined)
+    this.client = created || (axios as unknown as AxiosInstance)
 
     // Request interceptor: Add auth token
-    this.client.interceptors?.request?.use((config) => {
+    this.client.interceptors?.request?.use(config => {
       const token = localStorage.getItem('authToken')
       if (token) {
         config.headers.Authorization = `Basic ${token}`
@@ -34,12 +52,18 @@ export class ApiClient {
 
     // Response interceptor: Handle errors
     this.client.interceptors?.response?.use(
-      (response) => {
-        console.log('API Response:', response.config.method?.toUpperCase(), response.config.url, response.data)
+      response => {
+        // Logging removed for production - use browser DevTools Network tab for debugging
         return response
       },
       (error: AxiosError) => {
-        console.error('API Error:', error.config?.method?.toUpperCase(), error.config?.url, error.response?.status, error.response?.data)
+        console.error(
+          'API Error:',
+          error.config?.method?.toUpperCase(),
+          error.config?.url,
+          error.response?.status,
+          error.response?.data
+        )
         if (error.response?.status === 401) {
           localStorage.removeItem('authToken')
           localStorage.removeItem('userRole')
@@ -99,12 +123,13 @@ export class ApiClient {
   // Vehicles
   async getAllVehicles(): Promise<Vehicle[]> {
     const response = await this.client.get<Vehicle[]>('/vehicles')
-    return response.data
+    const list = Array.isArray(response.data) ? response.data : []
+    return list.map(v => this.normalizeVehicle(v))
   }
 
   async getVehicleById(id: number): Promise<Vehicle> {
     const response = await this.client.get<Vehicle>(`/vehicles/${id}`)
-    return response.data
+    return this.normalizeVehicle(response.data)
   }
 
   async searchAvailableVehicles(
@@ -121,7 +146,8 @@ export class ApiClient {
         endDate,
       },
     })
-    return response.data
+    const list = Array.isArray(response.data) ? response.data : []
+    return list.map(v => this.normalizeVehicle(v))
   }
 
   // Bookings
@@ -163,7 +189,16 @@ export class ApiClient {
     return response.data
   }
 
-  async checkinBooking(id: number, payload: { mileage: number; damagePresent: boolean; damageNotes: string; damageCost?: number; actualReturnTime?: string }): Promise<Booking> {
+  async checkinBooking(
+    id: number,
+    payload: {
+      mileage: number
+      damagePresent: boolean
+      damageNotes: string
+      damageCost?: number
+      actualReturnTime?: string
+    }
+  ): Promise<Booking> {
     const response = await this.client.put<Booking>(`/bookings/${id}/checkin`, payload)
     return response.data
   }
@@ -175,12 +210,13 @@ export class ApiClient {
   }
 
   async getCustomerById(id: number): Promise<Customer> {
-    const response = await this.client.get<any>(`/customers/${id}`)
+    const response = await this.client.get<Customer>(`/customers/${id}`)
     const c = response.data || {}
-    const normalize = (val: any): string => {
+    const normalize = (val: unknown): string => {
       if (val == null) return ''
       if (typeof val === 'string') return val
-      if (typeof val === 'object' && 'encryptedValue' in val) return String(val.encryptedValue ? '[ENCRYPTED]' : '')
+      if (typeof val === 'object' && val !== null && 'encryptedValue' in val)
+        return String((val as { encryptedValue?: string }).encryptedValue ? '[ENCRYPTED]' : '')
       return String(val)
     }
     return {
@@ -198,12 +234,13 @@ export class ApiClient {
   }
 
   async getCustomerByUsername(username: string): Promise<Customer> {
-    const response = await this.client.get<any>(`/customers/username/${username}`)
+    const response = await this.client.get<Customer>(`/customers/username/${username}`)
     const c = response.data || {}
-    const normalize = (val: any): string => {
+    const normalize = (val: unknown): string => {
       if (val == null) return ''
       if (typeof val === 'string') return val
-      if (typeof val === 'object' && 'encryptedValue' in val) return String(val.encryptedValue ? '[ENCRYPTED]' : '')
+      if (typeof val === 'object' && val !== null && 'encryptedValue' in val)
+        return String((val as { encryptedValue?: string }).encryptedValue ? '[ENCRYPTED]' : '')
       return String(val)
     }
     return {

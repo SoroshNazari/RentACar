@@ -8,7 +8,7 @@ test.describe('Authentication', () => {
     await expect(page).toHaveURL('/login')
     await page.getByText('RentACar').waitFor({ state: 'visible', timeout: 15000 })
 
-    await page.getByRole('heading', { name: 'Welcome Back' }).waitFor({ state: 'visible', timeout: 15000 })
+    await page.getByRole('heading', { name: 'Willkommen zurück' }).waitFor({ state: 'visible', timeout: 15000 })
     await page.locator('input[type="text"]').waitFor({ state: 'visible', timeout: 15000 })
     await page.locator('input[type="password"]').waitFor({ state: 'visible', timeout: 15000 })
   })
@@ -20,7 +20,7 @@ test.describe('Authentication', () => {
     await expect(page).toHaveURL('/login')
     await page.getByText('RentACar').waitFor({ state: 'visible', timeout: 15000 })
 
-    await page.getByText('Sign up').click()
+    await page.getByText('Registrieren').click()
     await expect(page).toHaveURL('/register')
   })
 
@@ -31,7 +31,7 @@ test.describe('Authentication', () => {
     await expect(page).toHaveURL('/register')
     await page.getByText('RentACar').waitFor({ state: 'visible', timeout: 15000 })
 
-    await page.getByRole('heading', { name: 'Create Account' }).waitFor({ state: 'visible', timeout: 15000 })
+    await page.getByRole('heading', { name: 'Konto erstellen' }).waitFor({ state: 'visible', timeout: 15000 })
     await page.locator('input[name="firstName"]').waitFor({ state: 'visible', timeout: 15000 })
     await page.locator('input[name="email"]').waitFor({ state: 'visible', timeout: 15000 })
   })

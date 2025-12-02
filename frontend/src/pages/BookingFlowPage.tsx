@@ -55,6 +55,7 @@ const BookingFlowPage = () => {
     if (api.isAuthenticated()) {
       loadCustomer()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [vehicleId])
 
   const loadVehicle = async () => {
@@ -74,7 +75,7 @@ const BookingFlowPage = () => {
       let data: Customer
       try {
         data = await api.getCustomerMe()
-      } catch (err: any) {
+      } catch (err: unknown) {
         const username = localStorage.getItem('username') || ''
         if (!username) throw err
         data = await api.getCustomerByUsername(username)
@@ -100,7 +101,8 @@ const BookingFlowPage = () => {
     const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1
     const basePrice = days * vehicle.dailyPrice
     const extrasCost =
-      days * ((extras.insurance ? 10 : 0) + (extras.additionalDriver ? 5 : 0) + (extras.childSeat ? 3 : 0))
+      days *
+      ((extras.insurance ? 10 : 0) + (extras.additionalDriver ? 5 : 0) + (extras.childSeat ? 3 : 0))
     const subtotal = basePrice + extrasCost
     const taxes = subtotal * 0.13
     return subtotal + taxes
@@ -108,15 +110,20 @@ const BookingFlowPage = () => {
 
   const handleContinueToDetails = () => {
     if (!pickupDate || !dropoffDate) {
-      alert('Please select pickup and drop-off dates')
+      alert('Bitte wähle Abhol- und Rückgabedatum')
       return
     }
     setCurrentStep('details')
   }
 
   const handleContinueToPayment = () => {
-    if (!customerDetails.fullName || !customerDetails.email || !customerDetails.phone || !customerDetails.driverLicense) {
-      alert('Please fill in all required fields')
+    if (
+      !customerDetails.fullName ||
+      !customerDetails.email ||
+      !customerDetails.phone ||
+      !customerDetails.driverLicense
+    ) {
+      alert('Bitte fülle alle erforderlichen Felder aus')
       return
     }
     setCurrentStep('payment')
@@ -124,7 +131,7 @@ const BookingFlowPage = () => {
 
   const handleConfirmBooking = async () => {
     if (!vehicle || !customer) {
-      alert('Please log in to complete booking')
+      alert('Bitte melde dich an, um die Buchung abzuschließen')
       navigate('/login')
       return
     }
@@ -144,20 +151,30 @@ const BookingFlowPage = () => {
       navigate('/dashboard?booking=success')
     } catch (error) {
       console.error('Failed to create booking:', error)
-      alert('Failed to create booking. Please try again.')
+      alert('Buchung fehlgeschlagen. Bitte versuche es erneut.')
     }
   }
 
   const steps = [
-    { number: 1, label: 'Select Dates', completed: currentStep !== 'dates', active: currentStep === 'dates' },
-    { number: 2, label: 'Customer Details', completed: currentStep === 'payment', active: currentStep === 'details' },
-    { number: 3, label: 'Payment', completed: false, active: currentStep === 'payment' },
+    {
+      number: 1,
+      label: 'Datum wählen',
+      completed: currentStep !== 'dates',
+      active: currentStep === 'dates',
+    },
+    {
+      number: 2,
+      label: 'Kundendaten',
+      completed: currentStep === 'payment',
+      active: currentStep === 'details',
+    },
+    { number: 3, label: 'Zahlung', completed: false, active: currentStep === 'payment' },
   ]
 
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-12 text-center">
-        <p className="text-gray-400">Loading...</p>
+        <p className="text-gray-400">Lädt...</p>
       </div>
     )
   }
@@ -165,7 +182,7 @@ const BookingFlowPage = () => {
   if (!vehicle) {
     return (
       <div className="container mx-auto px-4 py-12 text-center">
-        <p className="text-red-400">Vehicle not found</p>
+        <p className="text-red-400">Fahrzeug nicht gefunden</p>
       </div>
     )
   }
@@ -179,51 +196,78 @@ const BookingFlowPage = () => {
         <div className="lg:col-span-2">
           {currentStep === 'dates' && (
             <div className="card">
-              <h2 className="text-2xl font-bold text-white mb-6">Select Your Rental Dates</h2>
+              <h2 className="text-2xl font-bold text-white mb-6">Wähle deine Mietdaten</h2>
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-4">Pick-up Information</h3>
+                  <h3 className="text-lg font-semibold text-white mb-4">Abholinformationen</h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Date</label>
+                      <label
+                        htmlFor="bookingPickupDate"
+                        className="block text-sm font-medium text-gray-200 mb-2"
+                      >
+                        Datum
+                      </label>
                       <input
+                        id="bookingPickupDate"
                         type="date"
                         value={pickupDate}
-                        onChange={(e) => setPickupDate(e.target.value)}
+                        onChange={e => setPickupDate(e.target.value)}
                         min={new Date().toISOString().split('T')[0]}
                         className="input-field"
+                        aria-required="true"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Time</label>
+                      <label
+                        htmlFor="bookingPickupTime"
+                        className="block text-sm font-medium text-gray-200 mb-2"
+                      >
+                        Uhrzeit
+                      </label>
                       <input
+                        id="bookingPickupTime"
                         type="time"
                         value={pickupTime}
-                        onChange={(e) => setPickupTime(e.target.value)}
+                        onChange={e => setPickupTime(e.target.value)}
                         className="input-field"
+                        aria-required="true"
                       />
                     </div>
                   </div>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-4">Drop-off Information</h3>
+                  <h3 className="text-lg font-semibold text-white mb-4">Rückgabeinformationen</h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Date</label>
+                      <label
+                        htmlFor="bookingDropoffDate"
+                        className="block text-sm font-medium text-gray-200 mb-2"
+                      >
+                        Datum
+                      </label>
                       <input
+                        id="bookingDropoffDate"
                         type="date"
                         value={dropoffDate}
-                        onChange={(e) => setDropoffDate(e.target.value)}
+                        onChange={e => setDropoffDate(e.target.value)}
                         min={pickupDate || new Date().toISOString().split('T')[0]}
                         className="input-field"
+                        aria-required="true"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Time</label>
+                      <label
+                        htmlFor="bookingDropoffTime"
+                        className="block text-sm font-medium text-gray-200 mb-2"
+                      >
+                        Time
+                      </label>
                       <input
+                        id="bookingDropoffTime"
                         type="time"
                         value={dropoffTime}
-                        onChange={(e) => setDropoffTime(e.target.value)}
+                        onChange={e => setDropoffTime(e.target.value)}
                         className="input-field"
                       />
                     </div>
@@ -234,10 +278,10 @@ const BookingFlowPage = () => {
                     onClick={() => navigate(`/vehicle/${vehicleId}`)}
                     className="text-primary-600 hover:text-primary-700"
                   >
-                    ← Back to Vehicle Selection
+                    ← Zurück zur Fahrzeugauswahl
                   </button>
                   <button onClick={handleContinueToDetails} className="btn-primary">
-                    Continue to Step 2 →
+                    Weiter zu Schritt 2 →
                   </button>
                 </div>
               </div>
@@ -246,71 +290,73 @@ const BookingFlowPage = () => {
 
           {currentStep === 'details' && (
             <div className="card">
-              <h2 className="text-2xl font-bold text-white mb-6">Enter Your Details</h2>
+              <h2 className="text-2xl font-bold text-white mb-6">Gib deine Daten ein</h2>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Full Name</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Vollständiger Name
+                  </label>
                   <input
                     type="text"
                     value={customerDetails.fullName}
-                    onChange={(e) =>
+                    onChange={e =>
                       setCustomerDetails({ ...customerDetails, fullName: e.target.value })
                     }
-                    placeholder="John Doe"
+                    placeholder="Max Mustermann"
                     className="input-field"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Email Address
+                    E-Mail-Adresse
                   </label>
                   <input
                     type="email"
                     value={customerDetails.email}
-                    onChange={(e) =>
+                    onChange={e =>
                       setCustomerDetails({ ...customerDetails, email: e.target.value })
                     }
-                    placeholder="you@example.com"
+                    placeholder="max@example.com"
                     className="input-field"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Phone Number
+                    Telefonnummer
                   </label>
                   <input
                     type="tel"
                     value={customerDetails.phone}
-                    onChange={(e) =>
+                    onChange={e =>
                       setCustomerDetails({ ...customerDetails, phone: e.target.value })
                     }
-                    placeholder="(123) 456-7890"
+                    placeholder="+49 123 456789"
                     className="input-field"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Driver's License Number
+                    Führerscheinnummer
                   </label>
                   <input
                     type="text"
                     value={customerDetails.driverLicense}
-                    onChange={(e) =>
+                    onChange={e =>
                       setCustomerDetails({ ...customerDetails, driverLicense: e.target.value })
                     }
-                    placeholder="D123-4567-8901"
+                    placeholder="B123456789"
                     className="input-field"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Address</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Adresse</label>
                   <input
                     type="text"
                     value={customerDetails.address}
-                    onChange={(e) =>
+                    onChange={e =>
                       setCustomerDetails({ ...customerDetails, address: e.target.value })
                     }
-                    placeholder="123 Main St, Anytown, USA"
+                    placeholder="Musterstraße 1, 12345 Berlin"
                     className="input-field"
                   />
                 </div>
@@ -319,7 +365,7 @@ const BookingFlowPage = () => {
                     type="checkbox"
                     id="billingSame"
                     checked={customerDetails.billingSameAsHome}
-                    onChange={(e) =>
+                    onChange={e =>
                       setCustomerDetails({
                         ...customerDetails,
                         billingSameAsHome: e.target.checked,
@@ -328,7 +374,7 @@ const BookingFlowPage = () => {
                     className="w-4 h-4"
                   />
                   <label htmlFor="billingSame" className="text-gray-300">
-                    Billing address is the same as my home address
+                    Rechnungsadresse entspricht Lieferadresse
                   </label>
                 </div>
                 <div className="flex justify-between pt-4">
@@ -336,10 +382,10 @@ const BookingFlowPage = () => {
                     onClick={() => setCurrentStep('dates')}
                     className="text-primary-600 hover:text-primary-700"
                   >
-                    ← Back to Vehicle Selection
+                    ← Zurück
                   </button>
                   <button onClick={handleContinueToPayment} className="btn-primary">
-                    Continue to Payment →
+                    Weiter zur Zahlung →
                   </button>
                 </div>
               </div>
@@ -347,44 +393,44 @@ const BookingFlowPage = () => {
           )}
 
           {currentStep === 'payment' && (
-          <div className="card">
-            <h2 className="text-2xl font-bold text-white mb-2">Payment Details</h2>
-            <p className="text-gray-400 mb-6">
-              Securely enter your payment information to complete your booking.
-            </p>
-            <div className="bg-dark-700 rounded-lg p-4 border border-dark-600 mb-6">
-              <h3 className="text-lg font-semibold text-white mb-3">Extras</h3>
-              <div className="space-y-3">
-                <label className="flex items-center justify-between">
-                  <span className="text-gray-300">Insurance (+10€/Tag)</span>
-                  <input
-                    type="checkbox"
-                    checked={extras.insurance}
-                    onChange={(e) => setExtras({ ...extras, insurance: e.target.checked })}
-                    className="w-4 h-4"
-                  />
-                </label>
-                <label className="flex items-center justify-between">
-                  <span className="text-gray-300">Additional Driver (+5€/Tag)</span>
-                  <input
-                    type="checkbox"
-                    checked={extras.additionalDriver}
-                    onChange={(e) => setExtras({ ...extras, additionalDriver: e.target.checked })}
-                    className="w-4 h-4"
-                  />
-                </label>
-                <label className="flex items-center justify-between">
-                  <span className="text-gray-300">Child Seat (+3€/Tag)</span>
-                  <input
-                    type="checkbox"
-                    checked={extras.childSeat}
-                    onChange={(e) => setExtras({ ...extras, childSeat: e.target.checked })}
-                    className="w-4 h-4"
-                  />
-                </label>
+            <div className="card">
+              <h2 className="text-2xl font-bold text-white mb-2">Zahlungsdetails</h2>
+              <p className="text-gray-400 mb-6">
+                Gib deine Zahlungsinformationen sicher ein, um deine Buchung abzuschließen.
+              </p>
+              <div className="bg-dark-700 rounded-lg p-4 border border-dark-600 mb-6">
+                <h3 className="text-lg font-semibold text-white mb-3">Extras</h3>
+                <div className="space-y-3">
+                  <label className="flex items-center justify-between">
+                    <span className="text-gray-300">Versicherung (+10€/Tag)</span>
+                    <input
+                      type="checkbox"
+                      checked={extras.insurance}
+                      onChange={e => setExtras({ ...extras, insurance: e.target.checked })}
+                      className="w-4 h-4"
+                    />
+                  </label>
+                  <label className="flex items-center justify-between">
+                    <span className="text-gray-300">Zusätzlicher Fahrer (+5€/Tag)</span>
+                    <input
+                      type="checkbox"
+                      checked={extras.additionalDriver}
+                      onChange={e => setExtras({ ...extras, additionalDriver: e.target.checked })}
+                      className="w-4 h-4"
+                    />
+                  </label>
+                  <label className="flex items-center justify-between">
+                    <span className="text-gray-300">Kindersitz (+3€/Tag)</span>
+                    <input
+                      type="checkbox"
+                      checked={extras.childSeat}
+                      onChange={e => setExtras({ ...extras, childSeat: e.target.checked })}
+                      className="w-4 h-4"
+                    />
+                  </label>
+                </div>
               </div>
-            </div>
-            <div className="flex gap-4 mb-6">
+              <div className="flex gap-4 mb-6">
                 <button
                   onClick={() => setPaymentMethod('card')}
                   className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-colors ${
@@ -393,7 +439,7 @@ const BookingFlowPage = () => {
                       : 'bg-dark-700 text-gray-300 hover:bg-dark-600'
                   }`}
                 >
-                  Credit Card
+                  Kreditkarte
                 </button>
                 <button
                   onClick={() => setPaymentMethod('paypal')}
@@ -410,44 +456,42 @@ const BookingFlowPage = () => {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Card Number
+                      Kartennummer
                     </label>
                     <input
                       type="text"
                       value={cardDetails.cardNumber}
-                      onChange={(e) =>
-                        setCardDetails({ ...cardDetails, cardNumber: e.target.value })
-                      }
+                      onChange={e => setCardDetails({ ...cardDetails, cardNumber: e.target.value })}
                       placeholder="0000 0000 0000 0000"
                       className="input-field"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Cardholder Name
+                      Name auf der Karte
                     </label>
                     <input
                       type="text"
                       value={cardDetails.cardholderName}
-                      onChange={(e) =>
+                      onChange={e =>
                         setCardDetails({ ...cardDetails, cardholderName: e.target.value })
                       }
-                      placeholder="John Doe"
+                      placeholder="Max Mustermann"
                       className="input-field"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Expiration Date
+                        Ablaufdatum
                       </label>
                       <input
                         type="text"
                         value={cardDetails.expiryDate}
-                        onChange={(e) =>
+                        onChange={e =>
                           setCardDetails({ ...cardDetails, expiryDate: e.target.value })
                         }
-                        placeholder="MM/YY"
+                        placeholder="MM/JJ"
                         className="input-field"
                       />
                     </div>
@@ -456,9 +500,7 @@ const BookingFlowPage = () => {
                       <input
                         type="text"
                         value={cardDetails.cvv}
-                        onChange={(e) =>
-                          setCardDetails({ ...cardDetails, cvv: e.target.value })
-                        }
+                        onChange={e => setCardDetails({ ...cardDetails, cvv: e.target.value })}
                         placeholder="..."
                         className="input-field"
                       />
@@ -472,17 +514,17 @@ const BookingFlowPage = () => {
                       className="w-4 h-4"
                     />
                     <label htmlFor="billingSamePayment" className="text-gray-300">
-                      Billing address is the same as contact address
+                      Rechnungsadresse entspricht Kontaktadresse
                     </label>
                   </div>
                   <div className="flex items-center gap-4 pt-4">
                     <div className="flex items-center gap-2 text-green-400">
                       <span>🛡️</span>
-                      <span className="text-sm">SSL Secured Payment</span>
+                      <span className="text-sm">SSL-verschlüsselte Zahlung</span>
                     </div>
                     <div className="flex items-center gap-2 text-green-400">
                       <span>🔒</span>
-                      <span className="text-sm">Your information is protected</span>
+                      <span className="text-sm">Deine Daten sind geschützt</span>
                     </div>
                   </div>
                 </div>
@@ -494,25 +536,35 @@ const BookingFlowPage = () => {
         {/* Summary Sidebar */}
         <div className="lg:col-span-1">
           <div className="card sticky top-4">
-            <h3 className="text-xl font-bold text-white mb-4">Your Booking Summary</h3>
+            <h3 className="text-xl font-bold text-white mb-4">Deine Buchungsübersicht</h3>
             <div className="aspect-video bg-dark-700 rounded-lg mb-4 overflow-hidden">
               {vehicle.imageUrl ? (
                 <img
-                  src={(vehicle.imageUrl.startsWith('http') ? `/api/assets/image?url=${encodeURIComponent(normalizeImageUrl(vehicle.imageUrl))}` : vehicle.imageUrl) || ''}
+                  src={
+                    (vehicle.imageUrl.startsWith('http')
+                      ? `/api/assets/image?url=${encodeURIComponent(normalizeImageUrl(vehicle.imageUrl))}`
+                      : vehicle.imageUrl) || ''
+                  }
                   alt={`${vehicle.brand} ${vehicle.model}`}
                   className="w-full h-full object-cover"
-                  onError={(e) => {
+                  onError={e => {
                     const img = e.currentTarget
                     const raw = vehicle.imageUrl
                     if (img.src.startsWith('/api/assets/image') && raw) {
                       img.src = raw
                       img.onerror = () => {
                         img.style.display = 'none'
-                        img.parentElement!.innerHTML = '<span class="text-6xl flex items-center justify-center h-full">🚗</span>'
+                        if (img.parentElement) {
+                          img.parentElement.innerHTML =
+                            '<span class="text-6xl flex items-center justify-center h-full">🚗</span>'
+                        }
                       }
                     } else {
                       img.style.display = 'none'
-                      img.parentElement!.innerHTML = '<span class="text-6xl flex items-center justify-center h-full">🚗</span>'
+                      if (img.parentElement) {
+                        img.parentElement.innerHTML =
+                          '<span class="text-6xl flex items-center justify-center h-full">🚗</span>'
+                      }
                     }
                   }}
                 />
@@ -525,23 +577,23 @@ const BookingFlowPage = () => {
             <h4 className="text-lg font-semibold text-white mb-2">
               {vehicle.brand} {vehicle.model}
             </h4>
-            <p className="text-gray-400 mb-4">or similar | Premium Electric</p>
+            <p className="text-gray-400 mb-4">oder ähnlich | Premium Elektro</p>
             <div className="space-y-3 mb-6">
               <div>
-                <p className="text-sm text-gray-400">Pickup</p>
+                <p className="text-sm text-gray-400">Abholung</p>
                 <p className="text-white font-semibold">{vehicle.location}</p>
                 {pickupDate && (
                   <p className="text-gray-400 text-sm">
-                    {new Date(pickupDate).toLocaleDateString()}, {pickupTime}
+                    {new Date(pickupDate).toLocaleDateString('de-DE')}, {pickupTime}
                   </p>
                 )}
               </div>
               <div>
-                <p className="text-sm text-gray-400">Drop-off</p>
+                <p className="text-sm text-gray-400">Rückgabe</p>
                 <p className="text-white font-semibold">{vehicle.location}</p>
                 {dropoffDate && (
                   <p className="text-gray-400 text-sm">
-                    {new Date(dropoffDate).toLocaleDateString()}, {dropoffTime}
+                    {new Date(dropoffDate).toLocaleDateString('de-DE')}, {dropoffTime}
                   </p>
                 )}
               </div>
@@ -550,13 +602,14 @@ const BookingFlowPage = () => {
               {pickupDate && dropoffDate && (
                 <>
                   <div className="flex justify-between">
-                    <span className="text-gray-400">Rental Cost</span>
+                    <span className="text-gray-400">Mietkosten</span>
                     <span className="text-white">
                       {(() => {
                         const start = new Date(pickupDate)
                         const end = new Date(dropoffDate)
-                        const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1
-                        const base = vehicle!.dailyPrice * days
+                        const days =
+                          Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1
+                        const base = (vehicle?.dailyPrice || 0) * days
                         return formatCurrency(base)
                       })()}
                     </span>
@@ -567,20 +620,23 @@ const BookingFlowPage = () => {
                       {(() => {
                         const start = new Date(pickupDate)
                         const end = new Date(dropoffDate)
-                        const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1
-                        const extrasCost = days * ((extras.insurance ? 10 : 0) + (extras.additionalDriver ? 5 : 0) + (extras.childSeat ? 3 : 0))
+                        const days =
+                          Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1
+                        const extrasCost =
+                          days *
+                          ((extras.insurance ? 10 : 0) +
+                            (extras.additionalDriver ? 5 : 0) +
+                            (extras.childSeat ? 3 : 0))
                         return formatCurrency(extrasCost)
                       })()}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-400">Taxes & Fees</span>
-                    <span className="text-white">
-                      {formatCurrency(calculateTotal() * 0.13)}
-                    </span>
+                    <span className="text-gray-400">Steuern & Gebühren</span>
+                    <span className="text-white">{formatCurrency(calculateTotal() * 0.13)}</span>
                   </div>
                   <div className="flex justify-between pt-2 border-t border-dark-600">
-                    <span className="text-white font-bold">Total</span>
+                    <span className="text-white font-bold">Gesamt</span>
                     <span className="text-white font-bold text-xl">
                       {formatCurrency(calculateTotal())}
                     </span>
@@ -593,7 +649,63 @@ const BookingFlowPage = () => {
                 onClick={handleConfirmBooking}
                 className="btn-primary w-full mt-6 text-lg py-4"
               >
-                Confirm & Pay
+                Bestätigen & Bezahlen
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default BookingFlowPage
+const normalizeImageUrl = (raw: string | undefined) => {
+  if (!raw) return ''
+  try {
+    const u = new URL(raw)
+    if (u.host === 'images.unsplash.com' && !u.searchParams.has('ixlib')) {
+      u.searchParams.set('ixlib', 'rb-4.0.3')
+      u.searchParams.set('auto', 'format')
+      u.searchParams.set('fit', 'crop')
+      if (!u.searchParams.has('w')) u.searchParams.set('w', '800')
+      if (!u.searchParams.has('q')) u.searchParams.set('q', '80')
+      return u.toString()
+    }
+    return raw
+  } catch {
+    return raw
+  }
+}
+
+                        const extrasCost =
+                          days *
+                          ((extras.insurance ? 10 : 0) +
+                            (extras.additionalDriver ? 5 : 0) +
+                            (extras.childSeat ? 3 : 0))
+                        return formatCurrency(extrasCost)
+                      })()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Steuern & Gebühren</span>
+                    <span className="text-white">{formatCurrency(calculateTotal() * 0.13)}</span>
+                  </div>
+                  <div className="flex justify-between pt-2 border-t border-dark-600">
+                    <span className="text-white font-bold">Gesamt</span>
+                    <span className="text-white font-bold text-xl">
+                      {formatCurrency(calculateTotal())}
+                    </span>
+                  </div>
+                </>
+              )}
+            </div>
+            {currentStep === 'payment' && (
+              <button
+                onClick={handleConfirmBooking}
+                className="btn-primary w-full mt-6 text-lg py-4"
+              >
+                Bestätigen & Bezahlen
               </button>
             )}
           </div>

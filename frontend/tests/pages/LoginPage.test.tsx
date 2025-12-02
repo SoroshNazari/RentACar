@@ -1,11 +1,22 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { BrowserRouter } from 'react-router-dom'
-import LoginPage from '../LoginPage'
-import { api } from '@/lib/api'
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router-dom'
+import LoginPage from '@/pages/LoginPage'
 
-jest.mock('@/lib/api')
-const mockedApi = api as jest.Mocked<typeof api>
+// Mock the API module
+const mockLogin = jest.fn()
+const mockGetUserRoles = jest.fn()
+const mockIsAuthenticated = jest.fn(() => false)
 
+jest.mock('@/services/api', () => ({
+  api: {
+    isAuthenticated: (...args: unknown[]) => mockIsAuthenticated(...args),
+    login: (...args: unknown[]) => mockLogin(...args),
+    getUserRoles: (...args: unknown[]) => mockGetUserRoles(...args),
+  },
+}))
+
+// Mock useNavigate
 const mockNavigate = jest.fn()
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
@@ -15,41 +26,140 @@ jest.mock('react-router-dom', () => ({
 describe('LoginPage', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    localStorage.clear()
+    mockNavigate.mockClear()
+    mockLogin.mockClear()
+    mockGetUserRoles.mockClear()
+    mockIsAuthenticated.mockReturnValue(false)
   })
 
-  it('renders login form', () => {
+  it('renders login form with German text', () => {
     render(
-      <BrowserRouter>
+      <MemoryRouter>
         <LoginPage />
-      </BrowserRouter>
+      </MemoryRouter>
     )
 
-    expect(screen.getByText('Welcome Back')).toBeInTheDocument()
-    expect(screen.getByPlaceholderText(/Enter your username/i)).toBeInTheDocument()
-    expect(screen.getByPlaceholderText(/Enter your password/i)).toBeInTheDocument()
+    expect(screen.getByText('Willkommen zurück')).toBeInTheDocument()
+    expect(screen.getByText('Melde dich in deinem Konto an')).toBeInTheDocument()
+    expect(screen.getByText('Benutzername')).toBeInTheDocument()
+    expect(screen.getByText('Passwort')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Dein Benutzername')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Dein Passwort')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /anmelden/i })).toBeInTheDocument()
+    expect(screen.getByText(/noch kein konto/i)).toBeInTheDocument()
+    expect(screen.getByText(/registrieren/i)).toBeInTheDocument()
   })
 
-  it('shows error on failed login', async () => {
-    mockedApi.login = jest.fn().mockRejectedValue(new Error('Invalid credentials'))
-
+  it('allows user to input username and password', async () => {
+    const user = userEvent.setup()
     render(
-      <BrowserRouter>
+      <MemoryRouter>
         <LoginPage />
-      </BrowserRouter>
+      </MemoryRouter>
     )
 
-    const usernameInput = screen.getByPlaceholderText(/Enter your username/i)
-    const passwordInput = screen.getByPlaceholderText(/Enter your password/i)
-    const submitButton = screen.getByText('Sign In')
+    const usernameInput = screen.getByPlaceholderText('Dein Benutzername')
+    const passwordInput = screen.getByPlaceholderText('Dein Passwort')
 
-    fireEvent.change(usernameInput, { target: { value: 'testuser' } })
-    fireEvent.change(passwordInput, { target: { value: 'wrongpassword' } })
-    fireEvent.click(submitButton)
+    await user.type(usernameInput, 'testuser')
+    await user.type(passwordInput, 'testpass')
+
+    expect(usernameInput).toHaveValue('testuser')
+    expect(passwordInput).toHaveValue('testpass')
+  })
+
+  it('shows loading state during login', async () => {
+    const user = userEvent.setup()
+    mockLogin.mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)))
+
+    render(
+      <MemoryRouter>
+        <LoginPage />
+      </MemoryRouter>
+    )
+
+    const usernameInput = screen.getByPlaceholderText('Dein Benutzername')
+    const passwordInput = screen.getByPlaceholderText('Dein Passwort')
+    const submitButton = screen.getByRole('button', { name: /anmelden/i })
+
+    await user.type(usernameInput, 'testuser')
+    await user.type(passwordInput, 'testpass')
+    await user.click(submitButton)
+
+    expect(screen.getByText('Anmeldung läuft...')).toBeInTheDocument()
+    expect(submitButton).toBeDisabled()
+  })
+
+  it('navigates to dashboard for customer role after successful login', async () => {
+    const user = userEvent.setup()
+    mockLogin.mockResolvedValue(undefined)
+    mockGetUserRoles.mockReturnValue(['ROLE_CUSTOMER'])
+
+    render(
+      <MemoryRouter>
+        <LoginPage />
+      </MemoryRouter>
+    )
+
+    const usernameInput = screen.getByPlaceholderText('Dein Benutzername')
+    const passwordInput = screen.getByPlaceholderText('Dein Passwort')
+    const submitButton = screen.getByRole('button', { name: /anmelden/i })
+
+    await user.type(usernameInput, 'customer')
+    await user.type(passwordInput, 'password')
+    await user.click(submitButton)
 
     await waitFor(() => {
-      expect(screen.getByText(/Invalid credentials/i)).toBeInTheDocument()
+      expect(mockLogin).toHaveBeenCalledWith('customer', 'password')
+      expect(mockNavigate).toHaveBeenCalledWith('/dashboard')
+    })
+  })
+
+  it('navigates to employee page for employee role after successful login', async () => {
+    const user = userEvent.setup()
+    mockLogin.mockResolvedValue(undefined)
+    mockGetUserRoles.mockReturnValue(['ROLE_EMPLOYEE'])
+
+    render(
+      <MemoryRouter>
+        <LoginPage />
+      </MemoryRouter>
+    )
+
+    const usernameInput = screen.getByPlaceholderText('Dein Benutzername')
+    const passwordInput = screen.getByPlaceholderText('Dein Passwort')
+    const submitButton = screen.getByRole('button', { name: /anmelden/i })
+
+    await user.type(usernameInput, 'employee')
+    await user.type(passwordInput, 'password')
+    await user.click(submitButton)
+
+    await waitFor(() => {
+      expect(mockLogin).toHaveBeenCalledWith('employee', 'password')
+      expect(mockNavigate).toHaveBeenCalledWith('/employee')
+    })
+  })
+
+  it('shows error message on login failure', async () => {
+    const user = userEvent.setup()
+    mockLogin.mockRejectedValue({ response: { data: { error: 'Ungültige Anmeldedaten' } } })
+
+    render(
+      <MemoryRouter>
+        <LoginPage />
+      </MemoryRouter>
+    )
+
+    const usernameInput = screen.getByPlaceholderText('Dein Benutzername')
+    const passwordInput = screen.getByPlaceholderText('Dein Passwort')
+    const submitButton = screen.getByRole('button', { name: /anmelden/i })
+
+    await user.type(usernameInput, 'wronguser')
+    await user.type(passwordInput, 'wrongpass')
+    await user.click(submitButton)
+
+    await waitFor(() => {
+      expect(screen.getByText(/Ungültige Anmeldedaten/i)).toBeInTheDocument()
     })
   })
 })
-

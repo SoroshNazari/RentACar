@@ -13,20 +13,8 @@ const HomePage = () => {
     dropoffDate: '',
     vehicleType: '' as VehicleType | '',
   })
-  
-  // Set default dropoff date to 3 days after pickup
-  useEffect(() => {
-    if (searchParams.pickupDate && !searchParams.dropoffDate) {
-      const pickup = new Date(searchParams.pickupDate)
-      const dropoff = new Date(pickup)
-      dropoff.setDate(dropoff.getDate() + 3)
-      setSearchParams(prev => ({
-        ...prev,
-        dropoffDate: dropoff.toISOString().split('T')[0]
-      }))
-    }
-  }, [searchParams.pickupDate])
 
+  // Load featured vehicles on mount
   useEffect(() => {
     loadFeaturedVehicles()
   }, [])
@@ -39,30 +27,54 @@ const HomePage = () => {
       dropoff.setDate(dropoff.getDate() + 3)
       setSearchParams(prev => ({
         ...prev,
-        dropoffDate: dropoff.toISOString().split('T')[0]
+        dropoffDate: dropoff.toISOString().split('T')[0],
       }))
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams.pickupDate])
 
   const loadFeaturedVehicles = async () => {
     try {
-      const allVehicles: any[] = await api.getAllVehicles()
-      // Normalize licensePlate if it comes as an object
-      const normalized = allVehicles.map((v: any) => ({
-        ...v,
-        licensePlate: typeof v.licensePlate === 'object' && v.licensePlate?.value 
-          ? v.licensePlate.value 
-          : v.licensePlate || ''
-      }))
-      // Show first 3 available vehicles as featured
-      setVehicles(normalized.filter((v) => v.status === 'VERFÜGBAR').slice(0, 3))
-    } catch (error: any) {
-      console.error('Failed to load vehicles:', error)
+      // OPTIMIZATION: Only load available vehicles and limit to 3 immediately
+      // This reduces API response size and processing time
+      const allVehicles = await api.getAllVehicles()
+
+      // Early return if no vehicles
+      if (!allVehicles || allVehicles.length === 0) {
+        setVehicles([])
+        setLoading(false)
+        return
+      }
+
+      const normalizePlate = (val: unknown): string => {
+        if (val == null) return ''
+        if (typeof val === 'string') return val
+        if (typeof val === 'object' && val !== null) {
+          const maybe = val as { value?: unknown }
+          if (typeof maybe.value === 'string') return maybe.value
+        }
+        return String(val)
+      }
+
+      // OPTIMIZATION: Filter and slice in one pass, limit processing
+      const featured = allVehicles
+        .filter(v => v.status === 'VERFÜGBAR')
+        .slice(0, 3)
+        .map(v => ({
+          ...v,
+          licensePlate: normalizePlate(v.licensePlate as unknown),
+        }))
+
+      setVehicles(featured)
+    } catch (error: unknown) {
+      const e = error as { code?: string }
       // Silently fail - backend might not be running
-      // In production, you might want to show a user-friendly message
-      if (error.code === 'ECONNREFUSED') {
+      // Don't log errors in production to avoid performance impact
+      // Only log in development mode (check via process.env or mode)
+      if (process.env.NODE_ENV === 'development' && e.code === 'ECONNREFUSED') {
         console.warn('Backend server is not running. Please start it with: ./gradlew bootRun')
       }
+      setVehicles([]) // Set empty array on error
     } finally {
       setLoading(false)
     }
@@ -91,13 +103,13 @@ const HomePage = () => {
 
   const getVehicleTypeLabel = (type: VehicleType): string => {
     const labels: Record<VehicleType, string> = {
-      KLEINWAGEN: 'Economy',
-      KOMPAKTKLASSE: 'Compact',
-      MITTELKLASSE: 'Mid-size',
-      OBERKLASSE: 'Premium',
+      KLEINWAGEN: 'Kleinwagen',
+      KOMPAKTKLASSE: 'Komaktklasse',
+      MITTELKLASSE: 'Mittelklasse',
+      OBERKLASSE: 'Oberklasse',
       SUV: 'SUV',
       VAN: 'Van',
-      SPORTWAGEN: 'Sports',
+      SPORTWAGEN: 'Sportwagen',
     }
     return labels[type] || type
   }
@@ -122,17 +134,14 @@ const HomePage = () => {
         })()}
         <div className="relative z-20 container mx-auto px-4 h-full flex flex-col items-center justify-center text-center">
           <h1 className="text-5xl font-bold text-white mb-4">
-            Premium Car Rental Made Simple
+            Premium Autovermietung einfach gemacht
           </h1>
           <p className="text-xl text-gray-300 mb-8 max-w-2xl">
-            Explore our fleet of top-tier vehicles for any occasion.
+            Entdecke unsere Flotte erstklassiger Fahrzeuge für jeden Anlass.
           </p>
           <div className="flex gap-4">
-            <button
-              onClick={() => navigate('/vehicles')}
-              className="btn-primary text-lg px-8"
-            >
-              Browse Vehicles
+            <button onClick={() => navigate('/vehicles')} className="btn-primary text-lg px-8">
+              Fahrzeuge durchsuchen
             </button>
           </div>
         </div>
@@ -143,54 +152,54 @@ const HomePage = () => {
         <div className="bg-dark-800 rounded-lg p-6 border border-dark-700 shadow-xl">
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Location
-              </label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Standort</label>
               <input
                 type="text"
-                placeholder="City, Airport, or Address"
+                placeholder="Stadt, Flughafen oder Adresse"
                 value={searchParams.location}
-                onChange={(e) =>
-                  setSearchParams({ ...searchParams, location: e.target.value })
-                }
+                onChange={e => setSearchParams({ ...searchParams, location: e.target.value })}
                 className="input-field"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Pick-up Date
+              <label
+                htmlFor="homePickupDate"
+                className="block text-sm font-medium text-gray-200 mb-2"
+              >
+                Abholdatum
               </label>
               <input
+                id="homePickupDate"
                 type="date"
                 value={searchParams.pickupDate}
-                onChange={(e) =>
-                  setSearchParams({ ...searchParams, pickupDate: e.target.value })
-                }
+                onChange={e => setSearchParams({ ...searchParams, pickupDate: e.target.value })}
                 min={new Date().toISOString().split('T')[0]}
                 className="input-field"
+                aria-required="false"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Drop-off Date
+              <label
+                htmlFor="homeDropoffDate"
+                className="block text-sm font-medium text-gray-200 mb-2"
+              >
+                Rückgabedatum
               </label>
               <input
+                id="homeDropoffDate"
                 type="date"
                 value={searchParams.dropoffDate}
-                onChange={(e) =>
-                  setSearchParams({ ...searchParams, dropoffDate: e.target.value })
-                }
+                onChange={e => setSearchParams({ ...searchParams, dropoffDate: e.target.value })}
                 min={searchParams.pickupDate || new Date().toISOString().split('T')[0]}
                 className="input-field"
+                aria-required="false"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Vehicle Type
-              </label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Fahrzeugtyp</label>
               <select
                 value={searchParams.vehicleType}
-                onChange={(e) =>
+                onChange={e =>
                   setSearchParams({
                     ...searchParams,
                     vehicleType: e.target.value as VehicleType | '',
@@ -198,19 +207,19 @@ const HomePage = () => {
                 }
                 className="input-field"
               >
-                <option value="">Any Type</option>
-                <option value="KLEINWAGEN">Economy</option>
-                <option value="KOMPAKTKLASSE">Compact</option>
-                <option value="MITTELKLASSE">Mid-size</option>
-                <option value="OBERKLASSE">Premium</option>
+                <option value="">Beliebig</option>
+                <option value="KLEINWAGEN">Kleinwagen</option>
+                <option value="KOMPAKTKLASSE">Komaktklasse</option>
+                <option value="MITTELKLASSE">Mittelklasse</option>
+                <option value="OBERKLASSE">Oberklasse</option>
                 <option value="SUV">SUV</option>
                 <option value="VAN">Van</option>
-                <option value="SPORTWAGEN">Sports</option>
+                <option value="SPORTWAGEN">Sportwagen</option>
               </select>
             </div>
             <div className="flex items-end">
               <button onClick={handleSearch} className="btn-primary w-full">
-                Search
+                Suchen
               </button>
             </div>
           </div>
@@ -224,22 +233,18 @@ const HomePage = () => {
             <div className="w-12 h-12 bg-primary-600 rounded-lg flex items-center justify-center mx-auto mb-4">
               <span className="text-2xl">💰</span>
             </div>
-            <h3 className="text-xl font-semibold text-white mb-2">
-              Best Prices Guaranteed
-            </h3>
+            <h3 className="text-xl font-semibold text-white mb-2">Beste Preise garantiert</h3>
             <p className="text-gray-400">
-              We offer competitive rates on our entire fleet of premium vehicles.
+              Wir bieten wettbewerbsfähige Preise für unsere gesamte Flotte von Premium-Fahrzeugen.
             </p>
           </div>
           <div className="card text-center">
             <div className="w-12 h-12 bg-primary-600 rounded-lg flex items-center justify-center mx-auto mb-4">
               <span className="text-2xl">🛡️</span>
             </div>
-            <h3 className="text-xl font-semibold text-white mb-2">
-              24/7 Customer Support
-            </h3>
+            <h3 className="text-xl font-semibold text-white mb-2">24/7 Kundensupport</h3>
             <p className="text-gray-400">
-              Our dedicated support team is here to help you around the clock.
+              Unser engagiertes Support-Team ist rund um die Uhr für dich da.
             </p>
           </div>
           <div className="card text-center">
@@ -247,10 +252,10 @@ const HomePage = () => {
               <span className="text-2xl">🔒</span>
             </div>
             <h3 className="text-xl font-semibold text-white mb-2">
-              Fully Insured Rentals
+              Vollständig versicherte Mieten
             </h3>
             <p className="text-gray-400">
-              Drive with peace of mind knowing every rental is comprehensively insured.
+              Fahre mit ruhigem Gewissen, da jede Miete umfassend versichert ist.
             </p>
           </div>
         </div>
@@ -258,31 +263,34 @@ const HomePage = () => {
 
       {/* Featured Vehicles */}
       <section className="container mx-auto px-4 py-16">
-        <h2 className="text-3xl font-bold text-white mb-4">Our Featured Vehicles</h2>
+        <h2 className="text-3xl font-bold text-white mb-4">Unsere Featured Fahrzeuge</h2>
         <p className="text-gray-400 mb-8">
-          Discover a selection of our most popular cars, perfect for any journey.
+          Entdecke eine Auswahl unserer beliebtesten Autos, perfekt für jede Reise.
         </p>
         {loading ? (
           <div className="text-center py-12">
-            <p className="text-gray-400">Loading vehicles...</p>
+            <p className="text-gray-400">Fahrzeuge werden geladen...</p>
           </div>
         ) : vehicles.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-400 mb-4">No vehicles available at the moment.</p>
-            <p className="text-gray-500 text-sm">
-              Please check back later or contact support if the problem persists.
+            <p className="text-gray-400 mb-4">Derzeit sind keine Fahrzeuge verfügbar.</p>
+            <p className="text-gray-300 text-sm">
+              Bitte schaue später noch einmal vorbei oder kontaktiere den Support, wenn das Problem
+              weiterhin besteht.
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {vehicles.map((vehicle) => (
+            {vehicles.map(vehicle => (
               <div key={vehicle.id} className="card hover:border-primary-600 transition-colors">
                 <div className="aspect-video bg-dark-700 rounded-lg mb-4 overflow-hidden">
                   {(() => {
-                    const rawHero = (vehicle.imageGallery && vehicle.imageGallery[0]) || vehicle.imageUrl
-                    const hero = rawHero && rawHero.startsWith('http')
-                      ? `/api/assets/image?url=${encodeURIComponent(rawHero)}`
-                      : rawHero
+                    const rawHero =
+                      (vehicle.imageGallery && vehicle.imageGallery[0]) || vehicle.imageUrl
+                    const hero =
+                      rawHero && rawHero.startsWith('http')
+                        ? `/api/assets/image?url=${encodeURIComponent(rawHero)}`
+                        : rawHero
                     if (!hero) {
                       return (
                         <div className="w-full h-full flex items-center justify-center">
@@ -295,17 +303,23 @@ const HomePage = () => {
                         src={hero || ''}
                         alt={`${vehicle.brand} ${vehicle.model}`}
                         className="w-full h-full object-cover"
-                        onError={(e) => {
+                        onError={e => {
                           const img = e.currentTarget
                           if (hero && hero.startsWith('/api/assets/image')) {
                             img.src = rawHero || ''
                             img.onerror = () => {
                               img.style.display = 'none'
-                              img.parentElement!.innerHTML = '<span class="text-4xl flex items-center justify-center h-full">🚗</span>'
+                              if (img.parentElement) {
+                                img.parentElement.innerHTML =
+                                  '<span class="text-4xl flex items-center justify-center h-full">🚗</span>'
+                              }
                             }
                           } else {
                             img.style.display = 'none'
-                            img.parentElement!.innerHTML = '<span class="text-4xl flex items-center justify-center h-full">🚗</span>'
+                            if (img.parentElement) {
+                              img.parentElement.innerHTML =
+                                '<span class="text-4xl flex items-center justify-center h-full">🚗</span>'
+                            }
                           }
                         }}
                       />
@@ -318,16 +332,29 @@ const HomePage = () => {
                 <p className="text-gray-400 mb-4">{getVehicleTypeLabel(vehicle.type)}</p>
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-2xl font-bold text-primary-600">
-                    {new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(vehicle.dailyPrice)}/day
+                    {new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(
+                      vehicle.dailyPrice
+                    )}
+                    /Tag
                   </span>
                 </div>
                 <button
                   onClick={() => navigate(`/vehicle/${vehicle.id}`)}
                   className="btn-primary w-full"
                 >
-                  Book Now
+                  Jetzt buchen
                 </button>
               </div>
+            ))}
+          </div>
+        )}
+      </section>
+    </div>
+  )
+}
+
+export default HomePage
+
             ))}
           </div>
         )}

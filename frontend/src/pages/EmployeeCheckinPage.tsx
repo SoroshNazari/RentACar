@@ -7,13 +7,19 @@ const todayISO = () => new Date().toISOString().slice(0, 10)
 const EmployeeCheckinPage = () => {
   const [date, setDate] = useState(todayISO())
   const [bookings, setBookings] = useState<Booking[]>([])
-  const [inputs, setInputs] = useState<Record<number, { mileage: string; damagePresent: boolean; damageNotes: string; damageCost: string }>>({})
+  const [inputs, setInputs] = useState<
+    Record<
+      number,
+      { mileage: string; damagePresent: boolean; damageNotes: string; damageCost: string }
+    >
+  >({})
   const [loading, setLoading] = useState(true)
 
-  const normalizePlate = (plate: any): string => {
+  const normalizePlate = (plate: unknown): string => {
     if (plate == null) return ''
     if (typeof plate === 'object') {
-      return typeof plate.value === 'string' ? plate.value : ''
+      const maybe = plate as { value?: unknown }
+      return typeof maybe.value === 'string' ? maybe.value : ''
     }
     return String(plate)
   }
@@ -25,6 +31,7 @@ const EmployeeCheckinPage = () => {
       return
     }
     load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [date])
 
   const load = async () => {
@@ -32,19 +39,21 @@ const EmployeeCheckinPage = () => {
       setLoading(true)
       const data = await api.getReturns(date)
       const enrichWithMileage = async (list: Booking[]) => {
-        return Promise.all(list.map(async (b) => {
-          const v: any = (b as any).vehicle || {}
-          if (typeof v.mileage === 'number') return b
-          try {
-            const full: any = await api.getVehicleById(v.id)
-            return { ...b, vehicle: { ...(b as any).vehicle, mileage: full?.mileage } } as any
-          } catch {
-            return b
-          }
-        }))
+        return Promise.all(
+          list.map(async b => {
+            const v = b.vehicle
+            if (typeof v.mileage === 'number') return b
+            try {
+              const full = await api.getVehicleById(v.id)
+              return { ...b, vehicle: { ...b.vehicle, mileage: full.mileage } }
+            } catch {
+              return b
+            }
+          })
+        )
       }
       const enriched = await enrichWithMileage(data)
-      setBookings(enriched as any)
+      setBookings(enriched)
       setLoading(false)
     } catch (e) {
       console.error('Failed to load returns:', e)
@@ -53,16 +62,21 @@ const EmployeeCheckinPage = () => {
   }
 
   const handleCheckin = async (b: Booking) => {
-    const current = inputs[b.id] || { mileage: '', damagePresent: false, damageNotes: '', damageCost: '' }
+    const current = inputs[b.id] || {
+      mileage: '',
+      damagePresent: false,
+      damageNotes: '',
+      damageCost: '',
+    }
     const mileage = parseFloat(current.mileage)
-    const currentMileage = Number(((b as any).vehicle?.mileage ?? 0))
+    const currentMileage = Number(b.vehicle.mileage ?? 0)
     const damageCostNum = current.damageCost ? parseFloat(current.damageCost) : undefined
     if (!Number.isFinite(mileage) || mileage <= 0) {
-      alert('Please enter valid mileage')
+      alert('Bitte gib einen gültigen Kilometerstand ein')
       return
     }
     if (mileage < currentMileage) {
-      alert(`Mileage must be at least ${currentMileage}`)
+      alert(`Kilometerstand muss mindestens ${currentMileage} sein`)
       return
     }
     try {
@@ -75,123 +89,176 @@ const EmployeeCheckinPage = () => {
       })
       await load()
     } catch (e) {
-      console.error('Check-in failed:', e)
-      alert('Check-in failed')
+      console.error('Check-in fehlgeschlagen:', e)
+      alert('Check-in fehlgeschlagen')
     }
   }
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-white mb-6">Employee Check-in</h1>
+      <h1 className="text-3xl font-bold text-white mb-6">Fahrzeugrücknahme</h1>
       <div className="card mb-6">
         <div className="flex items-center gap-4">
-          <label className="text-gray-300">Return Date</label>
-          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="input-field" />
+          <label htmlFor="returnDate" className="text-gray-200 font-medium">
+            Rückgabedatum
+          </label>
+          <input
+            id="returnDate"
+            type="date"
+            value={date}
+            onChange={e => setDate(e.target.value)}
+            className="input-field"
+            aria-required="false"
+          />
         </div>
       </div>
       {loading ? (
-        <div className="text-gray-400">Loading data…</div>
+        <div className="text-gray-400">Daten werden geladen…</div>
       ) : bookings.length === 0 ? (
-        <div className="text-gray-400">No confirmed returns for the selected day.</div>
+        <div className="text-gray-400">Keine bestätigten Rückgaben für den ausgewählten Tag.</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {bookings.map((b) => (
+          {bookings.map(b => (
             <div key={b.id} className="card">
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <div className="text-white font-semibold">
-                    {b.vehicle.brand} {b.vehicle.model} • {normalizePlate((b as any).vehicle?.licensePlate)}
+                    {b.vehicle.brand} {b.vehicle.model} •{' '}
+                    {normalizePlate(b.vehicle.licensePlate as unknown)}
                   </div>
-                  <div className="text-gray-400 text-sm">Customer #{b.customerId} • Location {b.returnLocation}</div>
+                  <div className="text-gray-400 text-sm">
+                    Kunde #{b.customerId} • Standort {b.returnLocation}
+                  </div>
                 </div>
                 <span className="badge">{b.status}</span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="text-gray-300 mb-1 block">Current Mileage</label>
+                  <label className="text-gray-300 mb-1 block">Aktueller Kilometerstand</label>
                   <input
                     type="number"
-                    value={String(((b as any).vehicle?.mileage ?? ''))}
+                    value={String(b.vehicle.mileage ?? '')}
                     readOnly
                     className="input-field"
                   />
                 </div>
                 <div>
-                  <label className="text-gray-300 mb-1 block">Return Mileage</label>
+                  <label className="text-gray-300 mb-1 block">Rückgabe-Kilometerstand</label>
                   <input
                     type="number"
-                    min={Number(((b as any).vehicle?.mileage ?? 0))}
+                    min={Number(b.vehicle.mileage ?? 0)}
                     value={inputs[b.id]?.mileage || ''}
-                    onChange={(e) => setInputs({
-                      ...inputs,
-                      [b.id]: {
-                        mileage: e.target.value,
-                        damagePresent: inputs[b.id]?.damagePresent || false,
-                        damageNotes: inputs[b.id]?.damageNotes || '',
-                        damageCost: inputs[b.id]?.damageCost || '',
-                      },
-                    })}
+                    onChange={e =>
+                      setInputs({
+                        ...inputs,
+                        [b.id]: {
+                          mileage: e.target.value,
+                          damagePresent: inputs[b.id]?.damagePresent || false,
+                          damageNotes: inputs[b.id]?.damageNotes || '',
+                          damageCost: inputs[b.id]?.damageCost || '',
+                        },
+                      })
+                    }
                     className="input-field"
-                    placeholder={`e.g. ${Number(((b as any).vehicle?.mileage ?? 0))}`}
+                    placeholder={`z.B. ${Number(b.vehicle.mileage ?? 0)}`}
                   />
                 </div>
                 <div>
-                  <label className="text-gray-300 mb-1 block">Damage present?</label>
+                  <label className="text-gray-300 mb-1 block">Schäden vorhanden?</label>
                   <input
                     type="checkbox"
                     checked={inputs[b.id]?.damagePresent || false}
-                    onChange={(e) => setInputs({
-                      ...inputs,
-                      [b.id]: {
-                        mileage: inputs[b.id]?.mileage || '',
-                        damagePresent: e.target.checked,
-                        damageNotes: inputs[b.id]?.damageNotes || '',
-                        damageCost: inputs[b.id]?.damageCost || '',
-                      },
-                    })}
+                    onChange={e =>
+                      setInputs({
+                        ...inputs,
+                        [b.id]: {
+                          mileage: inputs[b.id]?.mileage || '',
+                          damagePresent: e.target.checked,
+                          damageNotes: inputs[b.id]?.damageNotes || '',
+                          damageCost: inputs[b.id]?.damageCost || '',
+                        },
+                      })
+                    }
                     className="w-4 h-4"
                   />
                 </div>
                 <div>
-                  <label className="text-gray-300 mb-1 block">Damage Cost (€)</label>
+                  <label className="text-gray-300 mb-1 block">Schadenskosten (€)</label>
                   <input
                     type="number"
                     min={0}
                     value={inputs[b.id]?.damageCost || ''}
-                    onChange={(e) => setInputs({
-                      ...inputs,
-                      [b.id]: {
-                        mileage: inputs[b.id]?.mileage || '',
-                        damagePresent: inputs[b.id]?.damagePresent || false,
-                        damageNotes: inputs[b.id]?.damageNotes || '',
-                        damageCost: e.target.value,
-                      },
-                    })}
+                    onChange={e =>
+                      setInputs({
+                        ...inputs,
+                        [b.id]: {
+                          mileage: inputs[b.id]?.mileage || '',
+                          damagePresent: inputs[b.id]?.damagePresent || false,
+                          damageNotes: inputs[b.id]?.damageNotes || '',
+                          damageCost: e.target.value,
+                        },
+                      })
+                    }
                     className="input-field"
-                    placeholder="e.g. 150"
+                    placeholder="z.B. 150"
                   />
                 </div>
                 <div className="md:col-span-3">
-                  <label className="text-gray-300 mb-1 block">Damage Description</label>
+                  <label className="text-gray-300 mb-1 block">Schadensbeschreibung</label>
                   <textarea
                     value={inputs[b.id]?.damageNotes || ''}
-                    onChange={(e) => setInputs({
-                      ...inputs,
-                      [b.id]: {
-                        mileage: inputs[b.id]?.mileage || '',
-                        damagePresent: inputs[b.id]?.damagePresent || false,
-                        damageNotes: e.target.value,
-                        damageCost: inputs[b.id]?.damageCost || '',
-                      },
-                    })}
+                    onChange={e =>
+                      setInputs({
+                        ...inputs,
+                        [b.id]: {
+                          mileage: inputs[b.id]?.mileage || '',
+                          damagePresent: inputs[b.id]?.damagePresent || false,
+                          damageNotes: e.target.value,
+                          damageCost: inputs[b.id]?.damageCost || '',
+                        },
+                      })
+                    }
                     className="input-field min-h-[80px]"
-                    placeholder="Scratches, dents, interior…"
+                    placeholder="Kratzer, Dellen, Innenraum…"
                   />
                 </div>
               </div>
               <div className="mt-4 flex justify-end">
                 <button className="btn-primary" onClick={() => handleCheckin(b)}>
-                  Perform Check-in
+                  Check-in durchführen
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default EmployeeCheckinPage
+
+                  <textarea
+                    value={inputs[b.id]?.damageNotes || ''}
+                    onChange={e =>
+                      setInputs({
+                        ...inputs,
+                        [b.id]: {
+                          mileage: inputs[b.id]?.mileage || '',
+                          damagePresent: inputs[b.id]?.damagePresent || false,
+                          damageNotes: e.target.value,
+                          damageCost: inputs[b.id]?.damageCost || '',
+                        },
+                      })
+                    }
+                    className="input-field min-h-[80px]"
+                    placeholder="Kratzer, Dellen, Innenraum…"
+                  />
+                </div>
+              </div>
+              <div className="mt-4 flex justify-end">
+                <button className="btn-primary" onClick={() => handleCheckin(b)}>
+                  Check-in durchführen
                 </button>
               </div>
             </div>

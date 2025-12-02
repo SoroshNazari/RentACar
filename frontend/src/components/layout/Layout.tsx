@@ -43,7 +43,7 @@ const Layout = () => {
                       to="/dashboard"
                       className="text-gray-300 hover:text-white transition-colors"
                     >
-                      Profile
+                      Profil
                     </Link>
                   )}
                   {(userRole === 'ROLE_EMPLOYEE' || userRole === 'ROLE_ADMIN') && (
@@ -52,39 +52,36 @@ const Layout = () => {
                         to="/employee"
                         className="text-gray-300 hover:text-white transition-colors"
                       >
-                        Employee Check-out
+                        Fahrzeugausgabe
                       </Link>
                       <Link
                         to="/employee/checkin"
                         className="text-gray-300 hover:text-white transition-colors"
                       >
-                        Employee Check-in
+                        Fahrzeugrücknahme
                       </Link>
                     </>
                   )}
                   <Link to="/about" className="text-gray-300 hover:text-white transition-colors">
-                    About Us
+                    Über uns
                   </Link>
                   <button
                     onClick={handleLogout}
                     className="text-gray-300 hover:text-white transition-colors"
                   >
-                    Log Out
+                    Abmelden
                   </button>
                 </>
               ) : (
                 <>
                   <Link to="/about" className="text-gray-300 hover:text-white transition-colors">
-                    About Us
+                    Über uns
                   </Link>
-                  <Link
-                    to="/login"
-                    className="text-gray-300 hover:text-white transition-colors"
-                  >
-                    Sign In
+                  <Link to="/login" className="text-gray-300 hover:text-white transition-colors">
+                    Anmelden
                   </Link>
                   <Link to="/register" className="btn-primary">
-                    Sign Up
+                    Registrieren
                   </Link>
                 </>
               )}
@@ -105,26 +102,24 @@ const Layout = () => {
                 </div>
                 <span className="font-bold text-white">RentACar</span>
               </div>
-              <p className="text-gray-400 text-sm">
-                Premium car rentals for every journey.
-              </p>
+              <p className="text-gray-400 text-sm">Premium Autovermietung für jede Reise.</p>
             </div>
             <div>
-              <h3 className="font-semibold text-white mb-4">COMPANY</h3>
+              <h3 className="font-semibold text-white mb-4">UNTERNEHMEN</h3>
               <ul className="space-y-2 text-sm text-gray-400">
                 <li>
                   <Link to="/about" className="hover:text-white transition-colors">
-                    About Us
+                    Über uns
                   </Link>
                 </li>
                 <li>
                   <Link to="/" className="hover:text-white transition-colors">
-                    Careers
+                    Karriere
                   </Link>
                 </li>
                 <li>
                   <Link to="/" className="hover:text-white transition-colors">
-                    Press
+                    Presse
                   </Link>
                 </li>
               </ul>
@@ -134,7 +129,7 @@ const Layout = () => {
               <ul className="space-y-2 text-sm text-gray-400">
                 <li>
                   <Link to="/" className="hover:text-white transition-colors">
-                    Contact Us
+                    Kontakt
                   </Link>
                 </li>
                 <li>
@@ -144,29 +139,29 @@ const Layout = () => {
                 </li>
                 <li>
                   <Link to="/" className="hover:text-white transition-colors">
-                    Help Center
+                    Hilfe-Center
                   </Link>
                 </li>
               </ul>
             </div>
             <div>
-              <h3 className="font-semibold text-white mb-4">LEGAL</h3>
+              <h3 className="font-semibold text-white mb-4">RECHTLICHES</h3>
               <ul className="space-y-2 text-sm text-gray-400">
                 <li>
                   <Link to="/" className="hover:text-white transition-colors">
-                    Terms of Service
+                    AGB
                   </Link>
                 </li>
                 <li>
                   <Link to="/" className="hover:text-white transition-colors">
-                    Privacy Policy
+                    Datenschutz
                   </Link>
                 </li>
               </ul>
             </div>
           </div>
           <div className="mt-8 pt-8 border-t border-dark-700 text-center text-sm text-gray-400">
-            © 2024 RentACar. All rights reserved.
+            © 2024 RentACar. Alle Rechte vorbehalten.
           </div>
         </div>
       </footer>

@@ -26,19 +26,13 @@ const ProgressIndicator = ({ steps }: ProgressIndicatorProps) => {
             >
               {step.completed ? '✓' : step.number}
             </div>
-            <span
-              className={`mt-2 text-sm ${
-                step.active ? 'text-primary-600' : 'text-gray-400'
-              }`}
-            >
+            <span className={`mt-2 text-sm ${step.active ? 'text-primary-600' : 'text-gray-400'}`}>
               {step.label}
             </span>
           </div>
           {index < steps.length - 1 && (
             <div
-              className={`w-16 h-0.5 mx-2 ${
-                step.completed ? 'bg-primary-600' : 'bg-dark-700'
-              }`}
+              className={`w-16 h-0.5 mx-2 ${step.completed ? 'bg-primary-600' : 'bg-dark-700'}`}
             />
           )}
         </div>
@@ -48,4 +42,3 @@ const ProgressIndicator = ({ steps }: ProgressIndicatorProps) => {
 }
 
 export default ProgressIndicator
-

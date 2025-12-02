@@ -2,7 +2,7 @@ import axios from 'axios'
 
 jest.mock('axios')
 
-import { ApiClient } from '../api'
+import { ApiClient } from '../../src/services/api'
 
 describe('ApiClient', () => {
   beforeEach(() => {
@@ -34,6 +34,7 @@ describe('ApiClient', () => {
       request: { use: jest.fn() },
       response: { use: jest.fn() },
     }
+    // mockedAxios is used for mocking axios methods
 
     // Dynamic import after mocking axios.create
     const clientStub = {
@@ -46,9 +47,8 @@ describe('ApiClient', () => {
       },
     } as any
     const api = new ApiClient(clientStub)
-    return { api, mockedAxios, mockResponse }
+    return { api, mockResponse }
   }
-const mockedAxios = axios as jest.Mocked<typeof axios>
 
   describe('login', () => {
     it('stores auth token and role on successful login', async () => {
@@ -65,13 +65,12 @@ const mockedAxios = axios as jest.Mocked<typeof axios>
   })
 
   describe('logout', () => {
-    it('removes auth data from localStorage', () => {
+    it('removes auth data from localStorage', async () => {
       localStorage.setItem('authToken', 'token')
       localStorage.setItem('userRole', 'ROLE_CUSTOMER')
       localStorage.setItem('username', 'testuser')
 
-      // direct import for logout (no axios needed)
-      const { api } = require('../api')
+      const { api } = await getApi()
       api.logout()
 
       expect(localStorage.getItem('authToken')).toBeNull()
@@ -81,15 +80,15 @@ const mockedAxios = axios as jest.Mocked<typeof axios>
   })
 
   describe('isAuthenticated', () => {
-    it('returns true when token exists', () => {
+    it('returns true when token exists', async () => {
       localStorage.setItem('authToken', 'token')
-      const { api } = require('../api')
+      const { api } = await getApi()
       expect(api.isAuthenticated()).toBe(true)
     })
 
-    it('returns false when token does not exist', () => {
+    it('returns false when token does not exist', async () => {
       localStorage.removeItem('authToken')
-      const { api } = require('../api')
+      const { api } = await getApi()
       expect(api.isAuthenticated()).toBe(false)
     })
   })

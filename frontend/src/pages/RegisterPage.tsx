@@ -27,7 +27,7 @@ const RegisterPage = () => {
     setError('')
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match')
+      setError('Passwörter stimmen nicht überein')
       return
     }
 
@@ -45,8 +45,11 @@ const RegisterPage = () => {
         driverLicenseNumber: formData.driverLicenseNumber,
       })
       navigate('/login?registered=true')
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.')
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } } }
+      setError(
+        e.response?.data?.message || 'Registrierung fehlgeschlagen. Bitte versuche es erneut.'
+      )
     } finally {
       setLoading(false)
     }
@@ -62,8 +65,8 @@ const RegisterPage = () => {
             </div>
             <span className="text-2xl font-bold text-white">RentACar</span>
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Create Account</h1>
-          <p className="text-gray-400">Sign up to start renting vehicles</p>
+          <h1 className="text-3xl font-bold text-white mb-2">Konto erstellen</h1>
+          <p className="text-gray-200">Registriere dich, um Fahrzeuge zu mieten</p>
         </div>
 
         <div className="card">
@@ -76,116 +79,152 @@ const RegisterPage = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  First Name
+                <label htmlFor="firstName" className="block text-sm font-medium text-gray-200 mb-2">
+                  Vorname
                 </label>
                 <input
+                  id="firstName"
                   type="text"
                   name="firstName"
                   value={formData.firstName}
                   onChange={handleChange}
                   required
                   className="input-field"
+                  aria-required="true"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Last Name</label>
+                <label htmlFor="lastName" className="block text-sm font-medium text-gray-200 mb-2">
+                  Nachname
+                </label>
                 <input
+                  id="lastName"
                   type="text"
                   name="lastName"
                   value={formData.lastName}
                   onChange={handleChange}
                   required
                   className="input-field"
+                  aria-required="true"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Username</label>
+              <label htmlFor="username" className="block text-sm font-medium text-gray-200 mb-2">
+                Benutzername
+              </label>
               <input
+                id="username"
                 type="text"
                 name="username"
                 value={formData.username}
                 onChange={handleChange}
                 required
                 className="input-field"
+                aria-required="true"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Email</label>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-200 mb-2">
+                E-Mail
+              </label>
               <input
+                id="email"
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
                 required
                 className="input-field"
+                aria-required="true"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Phone</label>
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-200 mb-2">
+                Telefon
+              </label>
               <input
+                id="phone"
                 type="tel"
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
                 required
                 className="input-field"
+                aria-required="true"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Address</label>
+              <label htmlFor="address" className="block text-sm font-medium text-gray-200 mb-2">
+                Adresse
+              </label>
               <input
+                id="address"
                 type="text"
                 name="address"
                 value={formData.address}
                 onChange={handleChange}
                 required
                 className="input-field"
+                aria-required="true"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Driver's License Number
+              <label
+                htmlFor="driverLicenseNumber"
+                className="block text-sm font-medium text-gray-200 mb-2"
+              >
+                Führerscheinnummer
               </label>
               <input
+                id="driverLicenseNumber"
                 type="text"
                 name="driverLicenseNumber"
                 value={formData.driverLicenseNumber}
                 onChange={handleChange}
                 required
                 className="input-field"
+                aria-required="true"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Password</label>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-200 mb-2">
+                Passwort
+              </label>
               <input
+                id="password"
                 type="password"
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
                 required
                 className="input-field"
+                aria-required="true"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Confirm Password
+              <label
+                htmlFor="confirmPassword"
+                className="block text-sm font-medium text-gray-200 mb-2"
+              >
+                Passwort bestätigen
               </label>
               <input
+                id="confirmPassword"
                 type="password"
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 required
                 className="input-field"
+                aria-required="true"
               />
             </div>
 
@@ -194,15 +233,15 @@ const RegisterPage = () => {
               disabled={loading}
               className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Creating account...' : 'Sign Up'}
+              {loading ? 'Konto wird erstellt...' : 'Registrieren'}
             </button>
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-gray-400">
-              Already have an account?{' '}
-              <Link to="/login" className="text-primary-600 hover:text-primary-700">
-                Sign in
+            <p className="text-gray-200">
+              Bereits ein Konto?{' '}
+              <Link to="/login" className="text-primary-500 hover:text-primary-400 underline">
+                Anmelden
               </Link>
             </p>
           </div>
@@ -214,3 +253,40 @@ const RegisterPage = () => {
 
 export default RegisterPage
 
+              </label>
+              <input
+                id="confirmPassword"
+                type="password"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                required
+                className="input-field"
+                aria-required="true"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Konto wird erstellt...' : 'Registrieren'}
+            </button>
+          </form>
+
+          <div className="mt-6 text-center">
+            <p className="text-gray-200">
+              Bereits ein Konto?{' '}
+              <Link to="/login" className="text-primary-500 hover:text-primary-400 underline">
+                Anmelden
+              </Link>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default RegisterPage

@@ -1,4 +1,4 @@
-import { ApiClient } from '../api'
+import { ApiClient } from '../../src/services/api'
 
 describe('ApiClient methods', () => {
   const mockClient = {
@@ -16,7 +16,7 @@ describe('ApiClient methods', () => {
   })
 
   it('getAllVehicles returns data', async () => {
-    const data = [{ id: '1' }]
+    const data = [{ id: '1', licensePlate: '' }]
     mockClient.get.mockResolvedValue({ status: 200, data })
     const api = new ApiClient(mockClient)
     const res = await api.getAllVehicles()
@@ -25,7 +25,7 @@ describe('ApiClient methods', () => {
   })
 
   it('getVehicleById returns item', async () => {
-    const data = { id: '1' }
+    const data = { id: '1', licensePlate: '' }
     mockClient.get.mockResolvedValue({ status: 200, data })
     const api = new ApiClient(mockClient)
     const res = await api.getVehicleById(1 as any)
@@ -56,5 +56,71 @@ describe('ApiClient methods', () => {
         endDate: '2025-01-05',
       },
     })
+  })
+
+  it('normalizes license plate from object with value', async () => {
+    const data = [{ id: '1', licensePlate: { value: 'B-AB 1234' } }]
+    mockClient.get.mockResolvedValue({ status: 200, data })
+    const api = new ApiClient(mockClient)
+    const res = await api.getAllVehicles()
+    expect(res[0].licensePlate).toBe('B-AB 1234')
+  })
+
+  it('normalizes license plate from object with encryptedValue', async () => {
+    const data = [{ id: '1', licensePlate: { encryptedValue: 'encrypted' } }]
+    mockClient.get.mockResolvedValue({ status: 200, data })
+    const api = new ApiClient(mockClient)
+    const res = await api.getAllVehicles()
+    expect(res[0].licensePlate).toBe('[ENCRYPTED]')
+  })
+
+  it('normalizes license plate from string', async () => {
+    const data = [{ id: '1', licensePlate: 'B-AB 1234' }]
+    mockClient.get.mockResolvedValue({ status: 200, data })
+    const api = new ApiClient(mockClient)
+    const res = await api.getAllVehicles()
+    expect(res[0].licensePlate).toBe('B-AB 1234')
+  })
+
+  it('normalizes license plate from null/undefined', async () => {
+    const data = [{ id: '1', licensePlate: null }, { id: '2', licensePlate: undefined }]
+    mockClient.get.mockResolvedValue({ status: 200, data })
+    const api = new ApiClient(mockClient)
+    const res = await api.getAllVehicles()
+    expect(res[0].licensePlate).toBe('')
+    expect(res[1].licensePlate).toBe('')
+  })
+})
+
+    const data = [{ id: '1', licensePlate: { value: 'B-AB 1234' } }]
+    mockClient.get.mockResolvedValue({ status: 200, data })
+    const api = new ApiClient(mockClient)
+    const res = await api.getAllVehicles()
+    expect(res[0].licensePlate).toBe('B-AB 1234')
+  })
+
+  it('normalizes license plate from object with encryptedValue', async () => {
+    const data = [{ id: '1', licensePlate: { encryptedValue: 'encrypted' } }]
+    mockClient.get.mockResolvedValue({ status: 200, data })
+    const api = new ApiClient(mockClient)
+    const res = await api.getAllVehicles()
+    expect(res[0].licensePlate).toBe('[ENCRYPTED]')
+  })
+
+  it('normalizes license plate from string', async () => {
+    const data = [{ id: '1', licensePlate: 'B-AB 1234' }]
+    mockClient.get.mockResolvedValue({ status: 200, data })
+    const api = new ApiClient(mockClient)
+    const res = await api.getAllVehicles()
+    expect(res[0].licensePlate).toBe('B-AB 1234')
+  })
+
+  it('normalizes license plate from null/undefined', async () => {
+    const data = [{ id: '1', licensePlate: null }, { id: '2', licensePlate: undefined }]
+    mockClient.get.mockResolvedValue({ status: 200, data })
+    const api = new ApiClient(mockClient)
+    const res = await api.getAllVehicles()
+    expect(res[0].licensePlate).toBe('')
+    expect(res[1].licensePlate).toBe('')
   })
 })

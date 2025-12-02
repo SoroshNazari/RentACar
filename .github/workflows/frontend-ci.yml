@@ -34,6 +34,17 @@ jobs:
       - name: Integration tests
         working-directory: frontend
         run: npm run test:integration
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v2.2
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectBaseDir: frontend
+      - name: SonarCloud Quality Gate
+        uses: SonarSource/sonarcloud-quality-gate-action@v1.1.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       - name: Install Playwright browsers
         working-directory: frontend
         run: npx playwright install --with-deps

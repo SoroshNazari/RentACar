@@ -4,10 +4,102 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="RentACar - Premium Car Rental Service. Book your dream car today!" />
     <title>RentACar - Premium Car Rental</title>
+    
+    <!-- Preconnect to external domains for faster resource loading -->
+    <link rel="preconnect" href="https://images.unsplash.com" crossorigin />
+    <link rel="dns-prefetch" href="https://images.unsplash.com" />
+    
+    <!-- Preload critical resources (only in production) -->
+    <!-- In development, Vite handles this automatically -->
+    
+    <!-- Inline critical CSS (will be handled by Vite in production) -->
+    <style>
+      /* Critical CSS for initial render */
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      #root {
+        min-height: 100vh;
+      }
+      /* Loading spinner styles */
+      .loading-spinner {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Loading fallback for initial render -->
+      <div class="loading-spinner" aria-label="Loading">
+        <div style="width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #667eea; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+      </div>
+    </div>
+    <script>
+      // Remove loading spinner once React loads
+      window.addEventListener('load', function() {
+        const spinner = document.querySelector('.loading-spinner');
+        if (spinner && document.getElementById('root').children.length > 1) {
+          spinner.remove();
+        }
+      });
+      // CSS animation for spinner
+      const style = document.createElement('style');
+      style.textContent = '@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }';
+      document.head.appendChild(style);
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
+    <!-- Inline critical CSS (will be handled by Vite in production) -->
+    <style>
+      /* Critical CSS for initial render */
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      #root {
+        min-height: 100vh;
+      }
+      /* Loading spinner styles */
+      .loading-spinner {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <!-- Loading fallback for initial render -->
+      <div class="loading-spinner" aria-label="Loading">
+        <div style="width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #667eea; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+      </div>
+    </div>
+    <script>
+      // Remove loading spinner once React loads
+      window.addEventListener('load', function() {
+        const spinner = document.querySelector('.loading-spinner');
+        if (spinner && document.getElementById('root').children.length > 1) {
+          spinner.remove();
+        }
+      });
+      // CSS animation for spinner
+      const style = document.createElement('style');
+      style.textContent = '@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }';
+      document.head.appendChild(style);
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

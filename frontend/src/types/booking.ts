@@ -13,6 +13,7 @@ export interface Booking {
     brand: string
     model: string
     licensePlate: string
+    mileage?: number
     type: string
     dailyPrice: number
   }

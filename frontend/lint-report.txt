@@ -1,0 +1,65 @@
+
+> frontend@0.0.0 lint
+> eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 50
+
+
+/Users/soroshnazari/Desktop/UNI/25_26-WiSe/Projekt/A6/RentACar/frontend/src/pages/BookingFlowPage.tsx
+  555:25  warning  Forbidden non-null assertion  @typescript-eslint/no-non-null-assertion
+  560:23  warning  Forbidden non-null assertion  @typescript-eslint/no-non-null-assertion
+  606:38  warning  Forbidden non-null assertion  @typescript-eslint/no-non-null-assertion
+
+/Users/soroshnazari/Desktop/UNI/25_26-WiSe/Projekt/A6/RentACar/frontend/src/pages/CustomerDashboardPage.tsx
+  23:6  warning  React Hook useEffect has a missing dependency: 'navigate'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/soroshnazari/Desktop/UNI/25_26-WiSe/Projekt/A6/RentACar/frontend/src/pages/EmployeeCheckinPage.tsx
+  34:6  warning  React Hook useEffect has a missing dependency: 'load'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/soroshnazari/Desktop/UNI/25_26-WiSe/Projekt/A6/RentACar/frontend/src/pages/EmployeeCheckoutPage.tsx
+  30:6  warning  React Hook useEffect has a missing dependency: 'load'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/soroshnazari/Desktop/UNI/25_26-WiSe/Projekt/A6/RentACar/frontend/src/pages/HomePage.tsx
+   28:6   warning  React Hook useEffect has a missing dependency: 'searchParams.dropoffDate'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+   45:6   warning  React Hook useEffect has a missing dependency: 'searchParams.dropoffDate'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  302:31  warning  Forbidden non-null assertion                                                                                                 @typescript-eslint/no-non-null-assertion
+  307:29  warning  Forbidden non-null assertion                                                                                                 @typescript-eslint/no-non-null-assertion
+
+/Users/soroshnazari/Desktop/UNI/25_26-WiSe/Projekt/A6/RentACar/frontend/src/pages/VehicleDetailPage.tsx
+   27:6   warning  React Hook useEffect has a missing dependency: 'loadVehicle'. Either include it or remove the dependency array     react-hooks/exhaustive-deps
+   33:6   warning  React Hook useEffect has a missing dependency: 'calculatePrice'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+   47:7   warning  Unexpected console statement. Only these console methods are allowed: warn, error                                  no-console
+   49:7   warning  Unexpected console statement. Only these console methods are allowed: warn, error                                  no-console
+  221:31  warning  Forbidden non-null assertion                                                                                       @typescript-eslint/no-non-null-assertion
+  221:49  warning  Forbidden non-null assertion                                                                                       @typescript-eslint/no-non-null-assertion
+
+/Users/soroshnazari/Desktop/UNI/25_26-WiSe/Projekt/A6/RentACar/frontend/src/pages/VehicleListPage.tsx
+   20:6   warning  React Hook useEffect has a missing dependency: 'loadVehicles'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+   52:7   warning  Unexpected console statement. Only these console methods are allowed: warn, error                                no-console
+  165:29  warning  Forbidden non-null assertion                                                                                     @typescript-eslint/no-non-null-assertion
+  170:27  warning  Forbidden non-null assertion                                                                                     @typescript-eslint/no-non-null-assertion
+
+/Users/soroshnazari/Desktop/UNI/25_26-WiSe/Projekt/A6/RentACar/frontend/src/services/api.ts
+  56:9  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/Users/soroshnazari/Desktop/UNI/25_26-WiSe/Projekt/A6/RentACar/frontend/tests/pages/RegisterPage.test.tsx
+  672:22  warning  Forbidden non-null assertion  @typescript-eslint/no-non-null-assertion
+  712:22  warning  Forbidden non-null assertion  @typescript-eslint/no-non-null-assertion
+  741:22  warning  Forbidden non-null assertion  @typescript-eslint/no-non-null-assertion
+  770:22  warning  Forbidden non-null assertion  @typescript-eslint/no-non-null-assertion
+
+/Users/soroshnazari/Desktop/UNI/25_26-WiSe/Projekt/A6/RentACar/frontend/tests/pages/VehicleDetailPage.test.tsx
+  457:11  warning  'user' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  476:11  warning  'user' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  647:55  warning  'idx' is defined but never used. Allowed unused args must match /^_/u            @typescript-eslint/no-unused-vars
+  817:62  warning  'idx' is defined but never used. Allowed unused args must match /^_/u            @typescript-eslint/no-unused-vars
+  873:62  warning  'idx' is defined but never used. Allowed unused args must match /^_/u            @typescript-eslint/no-unused-vars
+  939:62  warning  'idx' is defined but never used. Allowed unused args must match /^_/u            @typescript-eslint/no-unused-vars
+
+/Users/soroshnazari/Desktop/UNI/25_26-WiSe/Projekt/A6/RentACar/frontend/tests/services/api.comprehensive.test.ts
+  34:13  warning  'apiWithAuth' is assigned a value but never used. Allowed unused vars must match /^_/u   @typescript-eslint/no-unused-vars
+  53:13  warning  'apiWithError' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/soroshnazari/Desktop/UNI/25_26-WiSe/Projekt/A6/RentACar/frontend/tests/services/api.test.ts
+  51:7  warning  'mockedAxios' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+✖ 34 problems (0 errors, 34 warnings)
+

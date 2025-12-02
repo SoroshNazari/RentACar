@@ -17,6 +17,7 @@ const VehicleListPage = () => {
 
   useEffect(() => {
     loadVehicles()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location, startDate, endDate, vehicleType])
 
   const loadVehicles = async () => {
@@ -27,38 +28,44 @@ const VehicleListPage = () => {
       let results: Vehicle[] = []
       if (location && startDate && endDate && vehicleType) {
         // Search with filters
-        results = await api.searchAvailableVehicles(
-          vehicleType,
-          location,
-          startDate,
-          endDate
-        )
+        results = await api.searchAvailableVehicles(vehicleType, location, startDate, endDate)
       } else {
         // Show all available vehicles
         results = await api.getAllVehicles()
-        results = results.filter((v) => v.status === 'VERFÜGBAR')
+        results = results.filter(v => v.status === 'VERFÜGBAR')
       }
-      
-      // Normalize licensePlate if it comes as an object
-      results = results.map((v: any) => ({
+
+      // API normalizes licensePlate; keep a defensive fallback
+      const normalizePlate = (val: unknown): string => {
+        if (val == null) return ''
+        if (typeof val === 'string') return val
+        if (typeof val === 'object' && val !== null) {
+          const maybe = val as { value?: unknown }
+          if (typeof maybe.value === 'string') return maybe.value
+        }
+        return String(val)
+      }
+      results = results.map(v => ({
         ...v,
-        licensePlate: typeof v.licensePlate === 'object' && v.licensePlate?.value 
-          ? v.licensePlate.value 
-          : v.licensePlate || ''
+        licensePlate: normalizePlate((v as unknown as { licensePlate?: unknown }).licensePlate),
       }))
-      
-      console.log('Loaded vehicles:', results)
+
       setVehicles(results)
-    } catch (err: any) {
-      console.error('Failed to load vehicles:', err)
-      console.error('Error details:', err.response?.data || err.message)
-      setError('Failed to load vehicles. Please try again later.')
-      if (err.code === 'ECONNREFUSED' || err.message?.includes('ECONNREFUSED')) {
-        setError('Backend server is not running. Please start it with: ./gradlew bootRun')
-      } else if (err.response?.status === 403) {
-        setError('Access denied. Please check your authentication.')
-      } else if (err.response?.data) {
-        setError(`Error: ${JSON.stringify(err.response.data)}`)
+    } catch (err: unknown) {
+      const e = err as {
+        code?: string
+        message?: string
+        response?: { status?: number; data?: unknown }
+      }
+      console.error('Failed to load vehicles:', e)
+      console.error('Error details:', e.response?.data || e.message)
+      setError('Fahrzeuge konnten nicht geladen werden. Bitte versuchen Sie es später erneut.')
+      if (e.code === 'ECONNREFUSED' || e.message?.includes('ECONNREFUSED')) {
+        setError('Backend-Server läuft nicht. Bitte starten Sie ihn mit: ./gradlew bootRun')
+      } else if (e.response?.status === 403) {
+        setError('Zugriff verweigert. Bitte überprüfen Sie Ihre Authentifizierung.')
+      } else if (e.response?.data) {
+        setError(`Fehler: ${JSON.stringify(e.response.data)}`)
       }
     } finally {
       setLoading(false)
@@ -67,13 +74,13 @@ const VehicleListPage = () => {
 
   const getVehicleTypeLabel = (type: VehicleType): string => {
     const labels: Record<VehicleType, string> = {
-      KLEINWAGEN: 'Economy',
-      KOMPAKTKLASSE: 'Compact',
-      MITTELKLASSE: 'Mid-size',
-      OBERKLASSE: 'Premium',
+      KLEINWAGEN: 'Kleinwagen',
+      KOMPAKTKLASSE: 'Komaktklasse',
+      MITTELKLASSE: 'Mittelklasse',
+      OBERKLASSE: 'Oberklasse',
       SUV: 'SUV',
       VAN: 'Van',
-      SPORTWAGEN: 'Sports',
+      SPORTWAGEN: 'Sportwagen',
     }
     return labels[type] || type
   }
@@ -82,7 +89,7 @@ const VehicleListPage = () => {
     return (
       <div className="container mx-auto px-4 py-12">
         <div className="text-center">
-          <p className="text-gray-400 text-lg">Loading vehicles...</p>
+          <p className="text-gray-400 text-lg">Fahrzeuge werden geladen...</p>
         </div>
       </div>
     )
@@ -101,25 +108,25 @@ const VehicleListPage = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white mb-2">Available Vehicles</h1>
+        <h1 className="text-3xl font-bold text-white mb-2">Verfügbare Fahrzeuge</h1>
         {location && startDate && endDate && (
           <p className="text-gray-400">
-            Showing vehicles available from {new Date(startDate).toLocaleDateString()} to{' '}
-            {new Date(endDate).toLocaleDateString()} in {location}
+            Zeige Fahrzeuge verfügbar vom {new Date(startDate).toLocaleDateString('de-DE')} bis{' '}
+            {new Date(endDate).toLocaleDateString('de-DE')} in {location}
           </p>
         )}
       </div>
 
       {vehicles.length === 0 ? (
         <div className="card text-center py-12">
-          <p className="text-gray-400 text-lg mb-4">No vehicles available</p>
+          <p className="text-gray-400 text-lg mb-4">Keine Fahrzeuge verfügbar</p>
           <button onClick={() => navigate('/')} className="btn-primary">
-            Back to Home
+            Zurück zur Startseite
           </button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {vehicles.map((vehicle) => (
+          {vehicles.map(vehicle => (
             <div
               key={vehicle.id}
               className="card hover:border-primary-600 transition-colors cursor-pointer"
@@ -127,10 +134,13 @@ const VehicleListPage = () => {
             >
               <div className="aspect-video bg-dark-700 rounded-lg mb-4 overflow-hidden">
                 {(() => {
-                  const rawHero = normalizeImageUrl((vehicle.imageGallery && vehicle.imageGallery[0]) || vehicle.imageUrl)
-                  const hero = rawHero && rawHero.startsWith('http')
-                    ? `/api/assets/image?url=${encodeURIComponent(rawHero)}`
-                    : rawHero
+                  const rawHero = normalizeImageUrl(
+                    (vehicle.imageGallery && vehicle.imageGallery[0]) || vehicle.imageUrl
+                  )
+                  const hero =
+                    rawHero && rawHero.startsWith('http')
+                      ? `/api/assets/image?url=${encodeURIComponent(rawHero)}`
+                      : rawHero
                   if (!hero) {
                     return (
                       <div className="w-full h-full flex items-center justify-center">
@@ -143,17 +153,26 @@ const VehicleListPage = () => {
                       src={hero || ''}
                       alt={`${vehicle.brand} ${vehicle.model}`}
                       className="w-full h-full object-cover"
-                      onError={(e) => {
+                      loading="lazy"
+                      decoding="async"
+                      fetchPriority="low"
+                      onError={e => {
                         const img = e.currentTarget
                         if (hero && hero.startsWith('/api/assets/image')) {
                           img.src = rawHero || ''
                           img.onerror = () => {
                             img.style.display = 'none'
-                            img.parentElement!.innerHTML = '<span class="text-6xl flex items-center justify-center h-full">🚗</span>'
+                            if (img.parentElement) {
+                              img.parentElement.innerHTML =
+                                '<span class="text-6xl flex items-center justify-center h-full">🚗</span>'
+                            }
                           }
                         } else {
                           img.style.display = 'none'
-                          img.parentElement!.innerHTML = '<span class="text-6xl flex items-center justify-center h-full">🚗</span>'
+                          if (img.parentElement) {
+                            img.parentElement.innerHTML =
+                              '<span class="text-6xl flex items-center justify-center h-full">🚗</span>'
+                          }
                         }
                       }}
                     />
@@ -164,20 +183,23 @@ const VehicleListPage = () => {
                 {vehicle.brand} {vehicle.model}
               </h3>
               <p className="text-gray-400 mb-2">{getVehicleTypeLabel(vehicle.type)}</p>
-              <p className="text-sm text-gray-500 mb-4">Location: {vehicle.location}</p>
+              <p className="text-sm text-gray-300 mb-4">Standort: {vehicle.location}</p>
               <div className="flex items-center justify-between mb-4">
                 <span className="text-2xl font-bold text-primary-600">
-                  {new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(vehicle.dailyPrice)}/day
+                  {new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(
+                    vehicle.dailyPrice
+                  )}
+                  /Tag
                 </span>
               </div>
               <button
-                onClick={(e) => {
+                onClick={e => {
                   e.stopPropagation()
                   navigate(`/vehicle/${vehicle.id}`)
                 }}
                 className="btn-primary w-full"
               >
-                View Details
+                Details anzeigen
               </button>
             </div>
           ))}
@@ -195,6 +217,17 @@ const normalizeImageUrl = (raw: string | undefined) => {
     if (u.host === 'images.unsplash.com' && !u.searchParams.has('ixlib')) {
       u.searchParams.set('ixlib', 'rb-4.0.3')
       u.searchParams.set('auto', 'format')
+      u.searchParams.set('fit', 'crop')
+      if (!u.searchParams.has('w')) u.searchParams.set('w', '800')
+      if (!u.searchParams.has('q')) u.searchParams.set('q', '80')
+      return u.toString()
+    }
+    return raw
+  } catch {
+    return raw
+  }
+}
+
       u.searchParams.set('fit', 'crop')
       if (!u.searchParams.has('w')) u.searchParams.set('w', '800')
       if (!u.searchParams.has('q')) u.searchParams.set('q', '80')

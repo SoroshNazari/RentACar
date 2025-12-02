@@ -6,6 +6,8 @@ export default {
   testPathIgnorePatterns: ['<rootDir>/src/integration/'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^@/lib/(.*)$': '<rootDir>/src/services/$1',
+    '^@/services/(.*)$': '<rootDir>/src/services/$1',
     '^@shared/(.*)$': '<rootDir>/../shared/$1',
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
   },

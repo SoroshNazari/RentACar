@@ -29,4 +29,3 @@ export interface UpdateCustomerRequest {
   phone: string
   address: string
 }
-

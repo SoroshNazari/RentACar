@@ -1,0 +1,51 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Build outputs
+dist/
+build/
+coverage/
+
+# Generated files
+*.min.js
+*.min.css
+
+# Logs
+*.log
+logs/
+
+# Test results
+test-results/
+playwright-report/
+coverage/
+
+# Config files that should keep their format
+*.config.js
+tsconfig.json
+
+node_modules/
+package-lock.json
+
+# Build outputs
+dist/
+build/
+coverage/
+
+# Generated files
+*.min.js
+*.min.css
+
+# Logs
+*.log
+logs/
+
+# Test results
+test-results/
+playwright-report/
+coverage/
+
+# Config files that should keep their format
+*.config.js
+tsconfig.json
+
