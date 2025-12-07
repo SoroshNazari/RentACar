@@ -6,6 +6,46 @@ import type { Vehicle, VehicleType } from '@/types'
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(amount)
 
+const normalizeImageUrl = (raw: string | undefined) => {
+  if (!raw) return ''
+  try {
+    const u = new URL(raw)
+    if (u.host === 'images.unsplash.com' && !u.searchParams.has('ixlib')) {
+      u.searchParams.set('ixlib', 'rb-4.0.3')
+      u.searchParams.set('auto', 'format')
+      u.searchParams.set('fit', 'crop')
+      if (!u.searchParams.has('w')) u.searchParams.set('w', '800')
+      if (!u.searchParams.has('q')) u.searchParams.set('q', '80')
+      return u.toString()
+    }
+    return raw
+  } catch {
+    return raw
+  }
+}
+
+const normalizeImageUrlWithWidth = (raw: string | undefined, width: number) => {
+  if (!raw) return ''
+  try {
+    const u = new URL(normalizeImageUrl(raw))
+    if (u.host === 'images.unsplash.com') {
+      u.searchParams.set('w', String(width))
+      u.searchParams.set('h', String(width))
+    } else if (u.host.endsWith('picsum.photos')) {
+      const path = u.pathname.split('/')
+      const idx = path.findIndex(p => p === 'seed')
+      if (idx !== -1) {
+        path[path.length - 2] = String(width)
+        path[path.length - 1] = String(width)
+        u.pathname = path.join('/')
+      }
+    }
+    return u.toString()
+  } catch {
+    return raw
+  }
+}
+
 const VehicleDetailPage = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -413,73 +453,3 @@ const VehicleDetailPage = () => {
 }
 
 export default VehicleDetailPage
-const normalizeImageUrlWithWidth = (raw: string | undefined, width: number) => {
-  if (!raw) return ''
-  try {
-    const u = new URL(normalizeImageUrl(raw))
-    if (u.host === 'images.unsplash.com') {
-      u.searchParams.set('w', String(width))
-      u.searchParams.set('q', '80')
-    } else if (u.host.endsWith('picsum.photos')) {
-      const path = u.pathname.split('/')
-      const idx = path.findIndex(p => p === 'seed')
-      if (idx !== -1) {
-        path[path.length - 2] = String(width)
-        path[path.length - 1] = String(width)
-        u.pathname = path.join('/')
-      }
-    }
-    return u.toString()
-  } catch {
-    return raw
-  }
-}
-const normalizeImageUrl = (raw: string | undefined) => {
-  if (!raw) return ''
-  try {
-    const u = new URL(raw)
-    if (u.host === 'images.unsplash.com' && !u.searchParams.has('ixlib')) {
-      u.searchParams.set('ixlib', 'rb-4.0.3')
-      u.searchParams.set('auto', 'format')
-      u.searchParams.set('fit', 'crop')
-      if (!u.searchParams.has('w')) u.searchParams.set('w', '800')
-      if (!u.searchParams.has('q')) u.searchParams.set('q', '80')
-      return u.toString()
-    }
-    return raw
-  } catch {
-    return raw
-  }
-}
-
-    } else if (u.host.endsWith('picsum.photos')) {
-      const path = u.pathname.split('/')
-      const idx = path.findIndex(p => p === 'seed')
-      if (idx !== -1) {
-        path[path.length - 2] = String(width)
-        path[path.length - 1] = String(width)
-        u.pathname = path.join('/')
-      }
-    }
-    return u.toString()
-  } catch {
-    return raw
-  }
-}
-const normalizeImageUrl = (raw: string | undefined) => {
-  if (!raw) return ''
-  try {
-    const u = new URL(raw)
-    if (u.host === 'images.unsplash.com' && !u.searchParams.has('ixlib')) {
-      u.searchParams.set('ixlib', 'rb-4.0.3')
-      u.searchParams.set('auto', 'format')
-      u.searchParams.set('fit', 'crop')
-      if (!u.searchParams.has('w')) u.searchParams.set('w', '800')
-      if (!u.searchParams.has('q')) u.searchParams.set('q', '80')
-      return u.toString()
-    }
-    return raw
-  } catch {
-    return raw
-  }
-}

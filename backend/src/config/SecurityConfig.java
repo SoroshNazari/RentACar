@@ -11,14 +11,14 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.User; // Import für Spring Security User
-import org.springframework.security.core.userdetails.UserDetails; // Import für Spring Security UserDetails
-import org.springframework.security.core.userdetails.UserDetailsService; // Import für Spring Security UserDetailsService
-import org.springframework.security.provisioning.InMemoryUserDetailsManager; // Import für InMemoryUserDetailsManager
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import java.util.Arrays;
 
 /**
  * Spring Security Konfiguration für RBAC (NFR3, NFR4)
@@ -57,35 +57,22 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 
-    @Bean
-    public UserDetailsService userDetailsService(PasswordEncoder passwordEncoder) {
-        UserDetails customer = User.builder()
-            .username("customer")
-            .password(passwordEncoder.encode("password"))
-            .roles(UserRole.ROLE_CUSTOMER.name().substring(5)) // Entfernt "ROLE_" Präfix
-            .build();
-
-        UserDetails employee = User.builder()
-            .username("employee")
-            .password(passwordEncoder.encode("password"))
-            .roles(UserRole.ROLE_EMPLOYEE.name().substring(5)) // Entfernt "ROLE_" Präfix
-            .build();
-
-        UserDetails admin = User.builder()
-            .username("admin")
-            .password(passwordEncoder.encode("password"))
-            .roles(UserRole.ROLE_ADMIN.name().substring(5)) // Entfernt "ROLE_" Präfix
-            .build();
-
-        return new InMemoryUserDetailsManager(customer, employee, admin);
-    }
+    // CustomUserDetailsService wird als @Service automatisch als Bean registriert
+    // und lädt Benutzer aus der Datenbank
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource())) // CORS aktivieren
             .csrf(csrf -> csrf.disable()) // Für REST API, in Produktion sollte CSRF aktiviert sein
-            .sessionManagement(session ->
-                session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)) // Session-Verwaltung durch Spring Security
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) // Session-Verwaltung durch Spring Security
+                .maximumSessions(1) // Nur eine aktive Session pro Benutzer
+                .maxSessionsPreventsLogin(false) // Neue Login-Versuche invalidieren alte Sessions
+                .and()
+                .sessionFixation().migrateSession() // Session-Fixation-Schutz
+                .invalidSessionUrl("/api/auth/login?expired=true") // URL bei abgelaufener Session
+            )
             .formLogin(form -> form
                 .permitAll() // Erlaubt allen Zugriff auf die Login-Seite
             )
@@ -107,6 +94,7 @@ public class SecurityConfig {
 
                 // Kunden-Endpunkte
                 .requestMatchers("/api/customers/register").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/customers/activate").permitAll() // Account-Aktivierung öffentlich
                 .requestMatchers(HttpMethod.PUT, "/api/customers/**").hasAnyRole("EMPLOYEE", "ADMIN") // Spezifische Regel für Update
                 .requestMatchers("/api/customers/**").hasAnyRole("CUSTOMER", "EMPLOYEE", "ADMIN") // Generell für Lesezugriff/andere
 
@@ -115,8 +103,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/bookings/**").hasAnyRole("CUSTOMER", "EMPLOYEE", "ADMIN")
 
                 // Fahrzeug-Endpunkte
-                .requestMatchers(HttpMethod.GET, "/api/vehicles").authenticated()
-                .requestMatchers(HttpMethod.GET, "/api/vehicles/**").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/vehicles").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/vehicles/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/vehicles").hasAnyRole("EMPLOYEE", "ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/vehicles/**").hasAnyRole("EMPLOYEE", "ADMIN")
 
@@ -132,5 +120,27 @@ public class SecurityConfig {
             .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable())); // Für H2 Console
 
         return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList(
+            "http://localhost:3000",
+            "http://localhost:5173",
+            "http://localhost:5174",
+            "http://127.0.0.1:3000",
+            "http://127.0.0.1:5173",
+            "http://127.0.0.1:5174"
+        ));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowCredentials(true); // Wichtig für Session-Cookies
+        configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
+        configuration.setMaxAge(3600L);
+        
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 }

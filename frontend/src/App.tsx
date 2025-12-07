@@ -10,10 +10,13 @@ const VehicleDetailPage = lazy(() => import('./pages/VehicleDetailPage'))
 const BookingFlowPage = lazy(() => import('./pages/BookingFlowPage'))
 const LoginPage = lazy(() => import('./pages/LoginPage'))
 const RegisterPage = lazy(() => import('./pages/RegisterPage'))
+const ActivateAccountPage = lazy(() => import('./pages/ActivateAccountPage'))
 const CustomerDashboardPage = lazy(() => import('./pages/CustomerDashboardPage'))
+const CustomerProfilePage = lazy(() => import('./pages/CustomerProfilePage'))
 const AboutUsPage = lazy(() => import('./pages/AboutUsPage'))
 const EmployeeCheckoutPage = lazy(() => import('./pages/EmployeeCheckoutPage'))
 const EmployeeCheckinPage = lazy(() => import('./pages/EmployeeCheckinPage'))
+const VehicleManagementPage = lazy(() => import('./pages/VehicleManagementPage'))
 
 function App() {
   return (
@@ -21,14 +24,17 @@ function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/activate" element={<ActivateAccountPage />} />
         <Route path="/" element={<Layout />}>
           <Route index element={<HomePage />} />
           <Route path="vehicles" element={<VehicleListPage />} />
           <Route path="vehicle/:id" element={<VehicleDetailPage />} />
           <Route path="booking/:vehicleId" element={<BookingFlowPage />} />
           <Route path="dashboard" element={<CustomerDashboardPage />} />
+          <Route path="profile" element={<CustomerProfilePage />} />
           <Route path="employee" element={<EmployeeCheckoutPage />} />
           <Route path="employee/checkin" element={<EmployeeCheckinPage />} />
+          <Route path="employee/vehicles" element={<VehicleManagementPage />} />
           <Route path="about" element={<AboutUsPage />} />
         </Route>
       </Routes>

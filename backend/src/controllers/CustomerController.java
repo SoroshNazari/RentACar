@@ -2,6 +2,7 @@ package de.rentacar.customer.web;
 
 import de.rentacar.customer.application.CustomerService;
 import de.rentacar.customer.domain.Customer;
+import de.rentacar.shared.validation.ValidPassword;
 import lombok.RequiredArgsConstructor;
 import de.rentacar.customer.infrastructure.EncryptionService;
 import org.springframework.http.HttpStatus;
@@ -11,6 +12,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * REST Controller für Kundenverwaltung
@@ -25,7 +30,7 @@ public class CustomerController {
 
     @PostMapping("/register")
     // Keine @PreAuthorize, da dies für die Registrierung neuer Benutzer ist
-    public ResponseEntity<Customer> registerCustomer(@RequestBody RegisterCustomerRequest request,
+    public ResponseEntity<Map<String, Object>> registerCustomer(@Valid @RequestBody RegisterCustomerRequest request,
                                                     HttpServletRequest httpRequest) {
         Customer customer = customerService.registerCustomer(
                 request.username(),
@@ -38,7 +43,17 @@ public class CustomerController {
                 request.driverLicenseNumber(),
                 httpRequest.getRemoteAddr()
         );
-        return ResponseEntity.status(HttpStatus.CREATED).body(customer);
+        
+        // Für Entwicklung: Token in der Antwort zurückgeben (da DummyEmailService keine echten E-Mails sendet)
+        String activationToken = customerService.getActivationTokenForUser(customer.getUsername());
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("customer", customer);
+        response.put("activationToken", activationToken);
+        response.put("activationLink", "http://localhost:3000/activate?token=" + activationToken);
+        response.put("message", "Registrierung erfolgreich! Bitte aktivieren Sie Ihren Account.");
+        
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PutMapping("/{id}")
@@ -75,17 +90,33 @@ public class CustomerController {
         return ResponseEntity.ok(customerService.getCustomerByUsername(username));
     }
 
+    @GetMapping
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'ADMIN')") // Nur Mitarbeiter und Admin dürfen alle Kunden sehen
+    public ResponseEntity<List<Customer>> getAllCustomers() {
+        return ResponseEntity.ok(customerService.getAllCustomers());
+    }
+
     @GetMapping("/me")
     @PreAuthorize("isAuthenticated()") // Jeder authentifizierte Benutzer darf seine eigenen Details abrufen
     public ResponseEntity<CustomerDetailsResponse> getOwnDetails(Authentication authentication) {
         try {
             String username = authentication.getName();
             Customer customer = customerService.getCustomerByUsername(username);
+            
+            if (customer == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+            
             String email = customer.getEmail() != null ? encryptionService.decrypt(customer.getEmail().getEncryptedValue()) : null;
             String phone = customer.getPhone() != null ? encryptionService.decrypt(customer.getPhone().getEncryptedValue()) : null;
             String address = customer.getAddress() != null ? encryptionService.decrypt(customer.getAddress().getEncryptedValue()) : null;
             String license = customer.getDriverLicenseNumber() != null ? encryptionService.decrypt(customer.getDriverLicenseNumber().getEncryptedValue()) : null;
 
+            // Debug: Log die Customer-Daten
+            System.out.println("Customer ID: " + customer.getId());
+            System.out.println("Customer Username: " + customer.getUsername());
+            System.out.println("Customer FirstName: " + customer.getFirstName());
+            
             CustomerDetailsResponse dto = new CustomerDetailsResponse(
                     customer.getId(),
                     customer.getFirstName(),
@@ -96,17 +127,36 @@ public class CustomerController {
                     license,
                     customer.getUsername()
             );
+            
+            System.out.println("CustomerDetailsResponse ID: " + dto.id());
             return ResponseEntity.ok(dto);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            System.err.println("Error in getOwnDetails: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(null);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            System.err.println("Unexpected error in getOwnDetails: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(null);
+        }
+    }
+
+    @PostMapping("/activate")
+    public ResponseEntity<Map<String, String>> activateAccount(@RequestParam String token) {
+        try {
+            customerService.activateCustomer(token);
+            return ResponseEntity.ok(Map.of("message", "Account erfolgreich aktiviert"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
         }
     }
 
     public record RegisterCustomerRequest(
             String username,
-            String password,
+            @ValidPassword String password,
             String firstName,
             String lastName,
             String email,

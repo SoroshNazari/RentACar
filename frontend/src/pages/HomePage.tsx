@@ -37,9 +37,17 @@ const HomePage = () => {
             <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
               Miete dein Traumauto
             </h1>
-            <p className="text-xl text-gray-200">
+            <p className="text-xl text-gray-200 mb-8">
               Premium Fahrzeuge für unvergessliche Momente. Einfach, schnell und sicher.
             </p>
+            <div className="flex gap-4 justify-center">
+              <button
+                onClick={() => navigate('/vehicles')}
+                className="btn-primary text-lg px-8 py-3"
+              >
+                Fahrzeuge
+              </button>
+            </div>
           </div>
 
           <div className="bg-dark-800 p-6 rounded-xl border border-dark-700 shadow-2xl backdrop-blur-sm bg-opacity-95">

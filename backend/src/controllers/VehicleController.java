@@ -82,14 +82,34 @@ public class VehicleController {
         return ResponseEntity.noContent().build();
     }
 
+    @PatchMapping("/{id}/location")
+    @PreAuthorize("hasAnyRole('EMPLOYEE','ADMIN')")
+    public ResponseEntity<Vehicle> updateLocation(@PathVariable Long id,
+                                                 @RequestBody UpdateLocationRequest request,
+                                                 Authentication authentication,
+                                                 HttpServletRequest httpRequest) {
+        Vehicle vehicle = vehicleManagementService.updateVehicle(
+                id,
+                null, // brand
+                null, // model
+                null, // type
+                null, // year
+                request.location(), // location
+                null, // dailyPrice
+                null, // imageUrl
+                null, // imageGallery
+                authentication.getName(),
+                httpRequest.getRemoteAddr()
+        );
+        return ResponseEntity.ok(vehicle);
+    }
+
     @GetMapping
-    @PreAuthorize("isAuthenticated()") // CUSTOMER darf Fahrzeuge suchen
     public ResponseEntity<List<Vehicle>> getAllVehicles() {
         return ResponseEntity.ok(vehicleManagementService.getAllVehicles());
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("isAuthenticated()") // CUSTOMER darf Fahrzeuge suchen
     public ResponseEntity<Vehicle> getVehicleById(@PathVariable Long id) {
         return ResponseEntity.ok(vehicleManagementService.getVehicleById(id));
     }
@@ -130,5 +150,9 @@ public class VehicleController {
             Double dailyPrice,
             String imageUrl,
             List<String> imageGallery
+    ) {}
+
+    public record UpdateLocationRequest(
+            String location
     ) {}
 }
