@@ -9,7 +9,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
- * Aggregate Root für Buchungen (Booking Context)
+ * Aggregate Root für Buchungen (Booking Context).
+ * Repräsentiert NUR den Plan/Vertrag, nicht die Durchführung.
  */
 @Entity
 @Table(name = "bookings")
@@ -23,9 +24,9 @@ public class Booking extends BaseEntity {
     @Column(nullable = false)
     private Long customerId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "vehicle_id", nullable = false)
-    private de.rentacar.vehicle.domain.Vehicle vehicle;
+    // ÄNDERUNG: Nur noch die ID speichern, keine harte Objekt-Referenz mehr (Loose Coupling)
+    @Column(name = "vehicle_id", nullable = false)
+    private Long vehicleId;
 
     @Column(nullable = false)
     private LocalDate pickupDate;
@@ -49,38 +50,7 @@ public class Booking extends BaseEntity {
 
     private LocalDateTime cancellationDate;
 
-    private LocalDateTime checkoutTime;
-
-    @Column(precision = 10, scale = 2)
-    private java.math.BigDecimal checkoutMileage;
-
-    @Column(length = 1024)
-    private String checkoutNotes;
-
-    private LocalDateTime checkinTime;
-
-    @Column(precision = 10, scale = 2)
-    private java.math.BigDecimal checkinMileage;
-
-    @Column
-    @Builder.Default
-    private Boolean damagePresent = false;
-
-    @Column(length = 1024)
-    private String damageNotes;
-
-    @Column(precision = 10, scale = 2)
-    @Builder.Default
-    private BigDecimal damageCost = BigDecimal.ZERO;
-
-    @Column(precision = 10, scale = 2)
-    @Builder.Default
-    private BigDecimal extraMileageCost = BigDecimal.ZERO;
-
-    @Column(precision = 10, scale = 2)
-    @Builder.Default
-    private BigDecimal lateFee = BigDecimal.ZERO;
-
+    // Konfigurationen (bleiben hier, da Vertragsbestandteil)
     @Column
     @Builder.Default
     private Boolean insurance = false;
@@ -97,9 +67,6 @@ public class Booking extends BaseEntity {
     @Builder.Default
     private BigDecimal extrasCost = BigDecimal.ZERO;
 
-    /**
-     * Domain-Methode: Buchung bestätigen
-     */
     public void confirm() {
         if (this.status != BookingStatus.ANFRAGE) {
             throw new IllegalStateException("Nur Anfragen können bestätigt werden");
@@ -107,49 +74,24 @@ public class Booking extends BaseEntity {
         this.status = BookingStatus.BESTÄTIGT;
     }
 
-    /**
-     * Domain-Methode: Buchung stornieren (bis 24h vor Abholung)
-     */
     public void cancel() {
         if (this.status == BookingStatus.STORNIERT || this.status == BookingStatus.ABGESCHLOSSEN) {
             throw new IllegalStateException("Buchung kann nicht mehr storniert werden");
         }
-        
+
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime pickupDateTime = pickupDate.atStartOfDay();
-        LocalDateTime cancellationDeadline = pickupDateTime.minusHours(24);
-        
-        if (now.isAfter(cancellationDeadline)) {
+
+        if (now.isAfter(pickupDateTime.minusHours(24))) {
             throw new IllegalStateException("Stornierung nur bis 24 Stunden vor Abholung möglich");
         }
-        
+
         this.status = BookingStatus.STORNIERT;
         this.cancellationDate = now;
     }
 
-    /**
-     * Domain-Methode: Buchung abschließen
-     */
+    // Hilfsmethode: Buchung als "Erledigt" markieren (z.B. nach Rückgabe des Autos)
     public void complete() {
-        if (this.status != BookingStatus.BESTÄTIGT) {
-            throw new IllegalStateException("Nur bestätigte Buchungen können abgeschlossen werden");
-        }
         this.status = BookingStatus.ABGESCHLOSSEN;
-    }
-
-    /**
-     * Domain-Methode: Prüft ob Buchung aktiv ist (nicht storniert oder abgeschlossen)
-     */
-    public boolean isActive() {
-        return this.status == BookingStatus.ANFRAGE || this.status == BookingStatus.BESTÄTIGT;
-    }
-
-    /**
-     * Domain-Methode: Prüft ob Buchung überlappt mit gegebenem Zeitraum
-     */
-    public boolean overlapsWith(LocalDate startDate, LocalDate endDate) {
-        return this.status == BookingStatus.BESTÄTIGT &&
-               this.pickupDate.isBefore(endDate.plusDays(1)) &&
-               this.returnDate.isAfter(startDate.minusDays(1));
     }
 }
