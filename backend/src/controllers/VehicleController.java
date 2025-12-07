@@ -83,11 +83,13 @@ public class VehicleController {
     }
 
     @GetMapping
+    @PreAuthorize("isAuthenticated()") // CUSTOMER darf Fahrzeuge suchen
     public ResponseEntity<List<Vehicle>> getAllVehicles() {
         return ResponseEntity.ok(vehicleManagementService.getAllVehicles());
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("isAuthenticated()") // CUSTOMER darf Fahrzeuge suchen
     public ResponseEntity<Vehicle> getVehicleById(@PathVariable Long id) {
         return ResponseEntity.ok(vehicleManagementService.getVehicleById(id));
     }
