@@ -13,6 +13,26 @@ java {
     targetCompatibility = '17'
 }
 
+// Explicitly set the source directories
+sourceSets {
+    main {
+        java {
+            srcDirs = ['backend/src']
+        }
+        resources {
+            srcDirs = ['src/main/resources']
+        }
+    }
+    test {
+        java {
+            srcDirs = ['backend/tests']
+        }
+        resources {
+            srcDirs = ['src/test/resources']
+        }
+    }
+}
+
 repositories {
     mavenCentral()
 }
