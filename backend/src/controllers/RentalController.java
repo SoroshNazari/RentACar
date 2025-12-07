@@ -6,6 +6,7 @@ import de.rentacar.rental.domain.Rental;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,6 +24,7 @@ public class RentalController {
     private final RentalService rentalService;
 
     @PostMapping("/checkout")
+    @PreAuthorize("hasAnyRole('EMPLOYEE','ADMIN')")
     public ResponseEntity<Rental> performCheckout(@RequestBody CheckoutRequest request,
                                                   Authentication authentication,
                                                   HttpServletRequest httpRequest) {
@@ -37,6 +39,7 @@ public class RentalController {
     }
 
     @PostMapping("/{id}/checkin")
+    @PreAuthorize("hasAnyRole('EMPLOYEE','ADMIN')")
     public ResponseEntity<Rental> performCheckin(@PathVariable Long id,
                                                  @RequestBody CheckinRequest request,
                                                  Authentication authentication,
@@ -52,6 +55,7 @@ public class RentalController {
     }
 
     @PostMapping("/{id}/damage")
+    @PreAuthorize("hasAnyRole('EMPLOYEE','ADMIN')")
     public ResponseEntity<DamageReport> createDamageReport(@PathVariable Long id,
                                                           @RequestBody DamageReportRequest request,
                                                           Authentication authentication,
@@ -84,4 +88,3 @@ public class RentalController {
             String notes
     ) {}
 }
-

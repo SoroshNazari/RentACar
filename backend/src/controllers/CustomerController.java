@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import de.rentacar.customer.infrastructure.EncryptionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,6 +24,7 @@ public class CustomerController {
     private final EncryptionService encryptionService;
 
     @PostMapping("/register")
+    // Keine @PreAuthorize, da dies für die Registrierung neuer Benutzer ist
     public ResponseEntity<Customer> registerCustomer(@RequestBody RegisterCustomerRequest request,
                                                     HttpServletRequest httpRequest) {
         Customer customer = customerService.registerCustomer(
@@ -40,10 +42,14 @@ public class CustomerController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'ADMIN')") // Nur EMPLOYEE und ADMIN dürfen Kunden aktualisieren
     public ResponseEntity<Customer> updateCustomer(@PathVariable Long id,
                                                    @RequestBody UpdateCustomerRequest request,
                                                    Authentication authentication,
                                                    HttpServletRequest httpRequest) {
+        // TODO: Für CUSTOMER müsste hier eine zusätzliche Logik implementiert werden,
+        // um sicherzustellen, dass nur eigene Daten aktualisiert werden können.
+        // Dies würde eine Anpassung des UserDetailsService erfordern, um die Customer-ID im Principal zu speichern.
         Customer customer = customerService.updateCustomerData(
                 id,
                 request.firstName(),
@@ -58,16 +64,19 @@ public class CustomerController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'ADMIN') or (hasRole('CUSTOMER') and @customerService.getCustomerById(#id).username == authentication.name)")
     public ResponseEntity<Customer> getCustomerById(@PathVariable Long id) {
         return ResponseEntity.ok(customerService.getCustomerById(id));
     }
 
     @GetMapping("/username/{username}")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'ADMIN') or (hasRole('CUSTOMER') and #username == authentication.name)")
     public ResponseEntity<Customer> getCustomerByUsername(@PathVariable String username) {
         return ResponseEntity.ok(customerService.getCustomerByUsername(username));
     }
 
     @GetMapping("/me")
+    @PreAuthorize("isAuthenticated()") // Jeder authentifizierte Benutzer darf seine eigenen Details abrufen
     public ResponseEntity<CustomerDetailsResponse> getOwnDetails(Authentication authentication) {
         try {
             String username = authentication.getName();

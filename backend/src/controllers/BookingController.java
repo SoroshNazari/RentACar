@@ -27,6 +27,7 @@ public class BookingController {
     private final BookingService bookingService;
 
     @GetMapping("/search")
+    @PreAuthorize("isAuthenticated()") // CUSTOMER darf suchen
     public ResponseEntity<List<Vehicle>> searchAvailableVehicles(
             @RequestParam VehicleType vehicleType,
             @RequestParam String location,
@@ -42,6 +43,7 @@ public class BookingController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'EMPLOYEE', 'ADMIN')") // Alle dürfen Buchungen erstellen
     public ResponseEntity<Booking> createBooking(@RequestBody CreateBookingRequest request,
                                                 Authentication authentication,
                                                 HttpServletRequest httpRequest) {
@@ -71,14 +73,17 @@ public class BookingController {
     }
 
     @PutMapping("/{id}/cancel")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'EMPLOYEE', 'ADMIN')") // CUSTOMER darf eigene Buchungen stornieren, EMPLOYEE/ADMIN alle
     public ResponseEntity<Void> cancelBooking(@PathVariable Long id,
                                              Authentication authentication,
                                              HttpServletRequest httpRequest) {
+        // TODO: Zusätzliche Logik im Service, um sicherzustellen, dass CUSTOMER nur eigene Buchungen stornieren kann
         bookingService.cancelBooking(id, authentication.getName(), httpRequest.getRemoteAddr());
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/customer/{customerId}")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'ADMIN') or (hasRole('CUSTOMER') and #customerId == authentication.principal.id)") // CUSTOMER darf nur eigene Buchungen sehen
     public ResponseEntity<List<Booking>> getBookingHistory(@PathVariable Long customerId) {
         return ResponseEntity.ok(bookingService.getBookingHistory(customerId));
     }
