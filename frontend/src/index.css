@@ -5,11 +5,7 @@
 @layer base {
   body {
     @apply bg-dark-900 text-white;
-    font-family:
-      'Inter',
-      system-ui,
-      -apple-system,
-      sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
 }
 
