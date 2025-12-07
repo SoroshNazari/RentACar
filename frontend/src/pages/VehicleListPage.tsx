@@ -3,6 +3,25 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '@/services/api'
 import type { Vehicle, VehicleType } from '@/types'
 
+// Helper function defined outside the component to avoid recreation on render
+const normalizeImageUrl = (raw: string | undefined) => {
+  if (!raw) return ''
+  try {
+    const u = new URL(raw)
+    if (u.host === 'images.unsplash.com' && !u.searchParams.has('ixlib')) {
+      u.searchParams.set('ixlib', 'rb-4.0.3')
+      u.searchParams.set('auto', 'format')
+      u.searchParams.set('fit', 'crop')
+      if (!u.searchParams.has('w')) u.searchParams.set('w', '800')
+      if (!u.searchParams.has('q')) u.searchParams.set('q', '80')
+      return u.toString()
+    }
+    return raw
+  } catch {
+    return raw
+  }
+}
+
 const VehicleListPage = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -210,31 +229,3 @@ const VehicleListPage = () => {
 }
 
 export default VehicleListPage
-const normalizeImageUrl = (raw: string | undefined) => {
-  if (!raw) return ''
-  try {
-    const u = new URL(raw)
-    if (u.host === 'images.unsplash.com' && !u.searchParams.has('ixlib')) {
-      u.searchParams.set('ixlib', 'rb-4.0.3')
-      u.searchParams.set('auto', 'format')
-      u.searchParams.set('fit', 'crop')
-      if (!u.searchParams.has('w')) u.searchParams.set('w', '800')
-      if (!u.searchParams.has('q')) u.searchParams.set('q', '80')
-      return u.toString()
-    }
-    return raw
-  } catch {
-    return raw
-  }
-}
-
-      u.searchParams.set('fit', 'crop')
-      if (!u.searchParams.has('w')) u.searchParams.set('w', '800')
-      if (!u.searchParams.has('q')) u.searchParams.set('q', '80')
-      return u.toString()
-    }
-    return raw
-  } catch {
-    return raw
-  }
-}

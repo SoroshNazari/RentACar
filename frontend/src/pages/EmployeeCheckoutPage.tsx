@@ -257,37 +257,3 @@ const EmployeeCheckoutPage = () => {
 }
 
 export default EmployeeCheckoutPage
-
-                          className="input-field min-h-[80px]"
-                          placeholder="Kratzer, Sauberkeit, Hinweise…"
-                        />
-                      </div>
-                    </div>
-                    <div className="mt-4 flex justify-end gap-3">
-                      <button
-                        className="btn-secondary"
-                        onClick={async () => {
-                          try {
-                            await api.confirmBooking(b.id)
-                            await load()
-                          } catch (e) {
-                            console.error('Bestätigung fehlgeschlagen:', e)
-                            alert('Bestätigung fehlgeschlagen')
-                          }
-                        }}
-                      >
-                        Anfrage bestätigen
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </>
-      )}
-    </div>
-  )
-}
-
-export default EmployeeCheckoutPage

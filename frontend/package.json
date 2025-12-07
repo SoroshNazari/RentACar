@@ -24,9 +24,8 @@
     "quality:fix": "npm run lint:fix && npm run format",
     "typecheck": "tsc --noEmit",
     "lighthouse": "lighthouse http://localhost:3000 --quiet --enable-error-reporting=false --chrome-flags=\"--headless --no-sandbox --disable-gpu\" --output=json --output-path=./lighthouse-report.json",
-    "lighthouse:production": "lighthouse http://localhost:4173 --quiet --enable-error-reporting=false --chrome-flags=\"--headless --no-sandbox --disable-gpu\" --output=json --output-path=./lighthouse-report.json",
-    "lighthouse:visualize": "node scripts/visualize-lighthouse.mjs",
     "lighthouse:production": "node scripts/test-production-performance.mjs",
+    "lighthouse:visualize": "node scripts/visualize-lighthouse.mjs",
     "analyze:bundle": "node scripts/analyze-bundle.mjs",
     "userguide": "node scripts/userguide.mjs",
     "clean": "rm -rf dist node_modules/.cache",
@@ -41,6 +40,7 @@
   "devDependencies": {
     "@eslint/js": "^9.18.0",
     "@playwright/test": "^1.56.1",
+    "@rollup/rollup-win32-x64-msvc": "^4.53.3",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
@@ -74,5 +74,3 @@
     "vite": "^7.2.4"
   }
 }
-
-

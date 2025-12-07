@@ -18,6 +18,7 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager; // 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 
 /**
  * Spring Security Konfiguration für RBAC (NFR3, NFR4)
@@ -45,9 +46,6 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-
-    // Entferne die Injektion von CustomUserDetailsService, da wir InMemoryUserDetailsManager für Mock-User verwenden
-    // private final CustomUserDetailsService userDetailsService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -87,8 +85,17 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable()) // Für REST API, in Produktion sollte CSRF aktiviert sein
             .sessionManagement(session ->
-                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .httpBasic(httpBasic -> {}) // Basic Auth aktivieren
+                session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)) // Session-Verwaltung durch Spring Security
+            .formLogin(form -> form
+                .permitAll() // Erlaubt allen Zugriff auf die Login-Seite
+            )
+            .logout(logout -> logout
+                .logoutUrl("/api/auth/logout") // URL für den Logout
+                .invalidateHttpSession(true) // Session serverseitig invalidieren
+                .deleteCookies("JSESSIONID") // Session-Cookie löschen
+                .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler()) // HTTP 200 OK bei erfolgreichem Logout
+                .permitAll() // Erlaubt allen Zugriff auf die Logout-Funktion
+            )
             .authorizeHttpRequests(authz -> authz
                 // Öffentliche Endpunkte
                 .requestMatchers("/h2-console/**").permitAll()
@@ -104,12 +111,12 @@ public class SecurityConfig {
                 .requestMatchers("/api/customers/**").hasAnyRole("CUSTOMER", "EMPLOYEE", "ADMIN") // Generell für Lesezugriff/andere
 
                 // Buchungs-Endpunkte
-                .requestMatchers("/api/bookings/search").authenticated() // Geändert von permitAll()
+                .requestMatchers("/api/bookings/search").authenticated()
                 .requestMatchers("/api/bookings/**").hasAnyRole("CUSTOMER", "EMPLOYEE", "ADMIN")
 
                 // Fahrzeug-Endpunkte
-                .requestMatchers(HttpMethod.GET, "/api/vehicles").authenticated() // Geändert von permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/vehicles/**").authenticated() // Geändert von permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/vehicles").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/vehicles/**").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/vehicles").hasAnyRole("EMPLOYEE", "ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/vehicles/**").hasAnyRole("EMPLOYEE", "ADMIN")
 
@@ -122,7 +129,6 @@ public class SecurityConfig {
                 // Alle anderen Anfragen erfordern Authentifizierung
                 .anyRequest().authenticated()
             )
-            // .userDetailsService(userDetailsService) // Entfernt, da InMemoryUserDetailsManager verwendet wird
             .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable())); // Für H2 Console
 
         return http.build();
