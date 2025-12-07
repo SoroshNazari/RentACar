@@ -1,20 +1,20 @@
 package de.rentacar.customer.domain;
 
-import de.rentacar.shared.domain.BaseEntity;
+import de.rentacar.user.domain.model.User;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-/**
- * Aggregate Root für Kunden (Customer Context)
- */
 @Entity
 @Table(name = "customers")
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class Customer extends BaseEntity {
+// WICHTIG: Wir erben von User, nicht von BaseEntity!
+// Damit nutzen wir die ID, Username & Password vom User.
+@PrimaryKeyJoinColumn(name = "id")
+public class Customer extends User {
 
     @Column(nullable = false, length = 100)
     private String firstName;
@@ -22,9 +22,15 @@ public class Customer extends BaseEntity {
     @Column(nullable = false, length = 100)
     private String lastName;
 
+    // ACHTUNG: 'email' existiert schon im User für den Login.
+    // Falls du eine separate Kontakt-Email brauchst, nennen wir sie hier anders
+    // oder nutzen einfach die vom User. Ich habe sie hier erstmal auskommentiert,
+    // um Konflikte zu vermeiden. Nutze user.getEmail()!
+    /*
     @Embedded
     @AttributeOverride(name = "encryptedValue", column = @Column(name = "encrypted_email"))
-    private EncryptedString email;
+    private EncryptedString contactEmail;
+    */
 
     @Embedded
     @AttributeOverride(name = "encryptedValue", column = @Column(name = "encrypted_phone"))
@@ -38,42 +44,31 @@ public class Customer extends BaseEntity {
     @AttributeOverride(name = "encryptedValue", column = @Column(name = "encrypted_license_number"))
     private EncryptedString driverLicenseNumber;
 
-    @Column(nullable = false, unique = true)
-    private String username; // Für Login
-
-    @Column(nullable = false)
-    private String password; // Sollte gehasht sein (BCrypt)
+    // username & password ENTFERNT - sind bereits in der Elternklasse User!
 
     /**
-     * Domain-Methode: Aktualisiert Kundendaten
+     * Sichere toString Methode (verhindert StackOverflow)
      */
-    public void updatePersonalData(String firstName, String lastName, EncryptedString email, 
-                                   EncryptedString phone, EncryptedString address) {
-        if (firstName != null && !firstName.trim().isEmpty()) {
-            this.firstName = firstName;
-        }
-        if (lastName != null && !lastName.trim().isEmpty()) {
-            this.lastName = lastName;
-        }
-        if (email != null) {
-            this.email = email;
-        }
-        if (phone != null) {
-            this.phone = phone;
-        }
-        if (address != null) {
-            this.address = address;
-        }
+    @Override
+    public String toString() {
+        return "Customer{" +
+                "id=" + getId() +
+                ", username='" + getUsername() + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                '}';
     }
 
-    /**
-     * Domain-Methode: Aktualisiert Führerscheinnummer
-     */
+    // Die Domain-Methoden müssen angepasst werden, da wir jetzt Setter nutzen
+    public void updatePersonalData(String firstName, String lastName, EncryptedString phone, EncryptedString address) {
+        if (firstName != null && !firstName.trim().isEmpty()) this.firstName = firstName;
+        if (lastName != null && !lastName.trim().isEmpty()) this.lastName = lastName;
+        if (phone != null) this.phone = phone;
+        if (address != null) this.address = address;
+    }
+
     public void updateDriverLicense(EncryptedString driverLicenseNumber) {
-        if (driverLicenseNumber == null) {
-            throw new IllegalArgumentException("Führerscheinnummer darf nicht null sein");
-        }
+        if (driverLicenseNumber == null) throw new IllegalArgumentException("Führerscheinnummer darf nicht null sein");
         this.driverLicenseNumber = driverLicenseNumber;
     }
 }
-

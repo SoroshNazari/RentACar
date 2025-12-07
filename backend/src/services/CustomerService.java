@@ -8,11 +8,15 @@ import de.rentacar.shared.domain.AuditService;
 import de.rentacar.shared.security.Role;
 import de.rentacar.shared.security.User;
 import de.rentacar.shared.security.UserRepository;
+import de.rentacar.shared.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
+import java.util.Base64;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -27,6 +31,7 @@ public class CustomerService {
     private final EncryptionService encryptionService;
     private final PasswordEncoder passwordEncoder;
     private final AuditService auditService;
+    private final EmailService emailService;
 
     /**
      * Use Case: Kunde registrieren
@@ -41,12 +46,16 @@ public class CustomerService {
             throw new IllegalArgumentException("Benutzername bereits vergeben");
         }
 
-        // Erstelle User für Spring Security
+        // Generiere Aktivierungstoken
+        String activationToken = generateActivationToken();
+        
+        // Erstelle User für Spring Security (standardmäßig deaktiviert)
         User user = User.builder()
                 .username(username)
                 .password(passwordEncoder.encode(password))
                 .roles(Set.of(Role.ROLE_CUSTOMER))
-                .enabled(true)
+                .enabled(false) // Account muss per E-Mail aktiviert werden
+                .activationToken(activationToken)
                 .build();
         userRepository.save(user);
 
@@ -69,12 +78,52 @@ public class CustomerService {
 
         Customer savedCustomer = customerRepository.save(customer);
 
+        // Sende Aktivierungs-E-Mail
+        emailService.sendActivationEmail(email, activationToken);
+
         auditService.logAction(username, "CUSTOMER_REGISTERED", "Customer", 
                 savedCustomer.getId().toString(), 
                 "Kunde registriert",
                 ipAddress);
 
         return savedCustomer;
+    }
+
+    /**
+     * Use Case: Account aktivieren
+     */
+    @Transactional
+    public void activateCustomer(String activationToken) {
+        User user = userRepository.findByActivationToken(activationToken)
+                .orElseThrow(() -> new IllegalArgumentException("Ungültiger Aktivierungstoken"));
+
+        if (user.isEnabled()) {
+            throw new IllegalArgumentException("Account ist bereits aktiviert");
+        }
+
+        user.setEnabled(true);
+        user.setActivationToken(null); // Token nach Aktivierung löschen
+        userRepository.save(user);
+    }
+
+    /**
+     * Holt den Aktivierungstoken für einen Benutzer (für Entwicklung)
+     */
+    @Transactional(readOnly = true)
+    public String getActivationTokenForUser(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Benutzer nicht gefunden"));
+        return user.getActivationToken();
+    }
+
+    /**
+     * Generiert einen sicheren Aktivierungstoken
+     */
+    private String generateActivationToken() {
+        SecureRandom random = new SecureRandom();
+        byte[] tokenBytes = new byte[32];
+        random.nextBytes(tokenBytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(tokenBytes);
     }
 
     /**
@@ -123,6 +172,14 @@ public class CustomerService {
     public Customer getCustomerByUsername(String username) {
         return customerRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Kunde nicht gefunden"));
+    }
+
+    /**
+     * Use Case: Alle Kunden abrufen (für Mitarbeiter/Admin)
+     */
+    @Transactional(readOnly = true)
+    public List<Customer> getAllCustomers() {
+        return customerRepository.findAll();
     }
 }
 

@@ -25,12 +25,28 @@ import { ApiClient } from '@/services/api'
 
 ### Automatische Authentifizierung
 
-Der API Client fügt automatisch HTTP Basic Auth Header zu allen Requests hinzu, wenn ein Token in `localStorage` vorhanden ist.
+Der API Client verwendet **Axios** mit `withCredentials: true` für Session-basierte Authentifizierung. Dies ermöglicht das automatische Senden von Session-Cookies bei Cross-Origin-Requests.
 
+**Axios Konfiguration:**
 ```typescript
-// Token wird automatisch aus localStorage gelesen
-// Header: Authorization: Basic <base64(username:password)>
+// withCredentials: true ermöglicht das Senden von Cookies
+// Dies ist notwendig für Spring Security Session-Management
+const client = axios.create({
+  baseURL: '/api',
+  withCredentials: true, // Wichtig für Session-Cookies
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})
 ```
+
+**Best Practices (Axios):**
+- `withCredentials: true` für Session-Cookie-Unterstützung
+- Interceptors können für automatische Token-Aktualisierung bei 401-Fehlern verwendet werden
+- Retry-Logik bei Netzwerkfehlern möglich
+- Zentrale Fehlerbehandlung über Response-Interceptors
+
+**Referenz:** [Axios Documentation - withCredentials](https://axios-http.com/docs/req_config)
 
 ### Login
 

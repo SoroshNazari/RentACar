@@ -38,16 +38,25 @@ const Layout = () => {
             <div className="flex items-center gap-6">
               {isAuthenticated ? (
                 <>
+                  {/* CUSTOMER: Profil */}
                   {userRole === 'ROLE_CUSTOMER' && (
                     <Link
-                      to="/dashboard"
+                      to="/profile"
                       className="text-gray-300 hover:text-white transition-colors"
                     >
                       Profil
                     </Link>
                   )}
-                  {(userRole === 'ROLE_EMPLOYEE' || userRole === 'ROLE_ADMIN') && (
+                  
+                  {/* EMPLOYEE: Fahrzeugverwaltung, Check-in/out */}
+                  {userRole === 'ROLE_EMPLOYEE' && (
                     <>
+                      <Link
+                        to="/employee/vehicles"
+                        className="text-gray-300 hover:text-white transition-colors"
+                      >
+                        Fahrzeuge
+                      </Link>
                       <Link
                         to="/employee"
                         className="text-gray-300 hover:text-white transition-colors"
@@ -62,6 +71,37 @@ const Layout = () => {
                       </Link>
                     </>
                   )}
+                  
+                  {/* ADMIN: Alle Funktionen (Fahrzeuge, Check-in/out, Dashboard) */}
+                  {userRole === 'ROLE_ADMIN' && (
+                    <>
+                      <Link
+                        to="/dashboard"
+                        className="text-gray-300 hover:text-white transition-colors"
+                      >
+                        Dashboard
+                      </Link>
+                      <Link
+                        to="/employee/vehicles"
+                        className="text-gray-300 hover:text-white transition-colors"
+                      >
+                        Fahrzeuge
+                      </Link>
+                      <Link
+                        to="/employee"
+                        className="text-gray-300 hover:text-white transition-colors"
+                      >
+                        Fahrzeugausgabe
+                      </Link>
+                      <Link
+                        to="/employee/checkin"
+                        className="text-gray-300 hover:text-white transition-colors"
+                      >
+                        Fahrzeugrücknahme
+                      </Link>
+                    </>
+                  )}
+                  
                   <Link to="/about" className="text-gray-300 hover:text-white transition-colors">
                     Über uns
                   </Link>

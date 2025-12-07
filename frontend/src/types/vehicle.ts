@@ -21,6 +21,7 @@ export interface Vehicle {
   brand: string
   model: string
   type: VehicleType
+  year?: number
   mileage: number
   location: string
   status: VehicleStatus

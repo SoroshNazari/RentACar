@@ -18,6 +18,24 @@ const BookingFlowPage = () => {
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(amount)
 
+  const normalizeImageUrl = (raw: string | undefined) => {
+    if (!raw) return ''
+    try {
+      const u = new URL(raw)
+      if (u.host === 'images.unsplash.com' && !u.searchParams.has('ixlib')) {
+        u.searchParams.set('ixlib', 'rb-4.0.3')
+        u.searchParams.set('auto', 'format')
+        u.searchParams.set('fit', 'crop')
+        if (!u.searchParams.has('w')) u.searchParams.set('w', '800')
+        if (!u.searchParams.has('q')) u.searchParams.set('q', '80')
+        return u.toString()
+      }
+      return raw
+    } catch {
+      return raw
+    }
+  }
+
   // Step 1: Dates
   const [pickupDate, setPickupDate] = useState(searchParams.get('pickupDate') || '')
   const [pickupTime, setPickupTime] = useState('10:00')
@@ -660,76 +678,3 @@ const BookingFlowPage = () => {
 }
 
 export default BookingFlowPage
-const normalizeImageUrl = (raw: string | undefined) => {
-  if (!raw) return ''
-  try {
-    const u = new URL(raw)
-    if (u.host === 'images.unsplash.com' && !u.searchParams.has('ixlib')) {
-      u.searchParams.set('ixlib', 'rb-4.0.3')
-      u.searchParams.set('auto', 'format')
-      u.searchParams.set('fit', 'crop')
-      if (!u.searchParams.has('w')) u.searchParams.set('w', '800')
-      if (!u.searchParams.has('q')) u.searchParams.set('q', '80')
-      return u.toString()
-    }
-    return raw
-  } catch {
-    return raw
-  }
-}
-
-                        const extrasCost =
-                          days *
-                          ((extras.insurance ? 10 : 0) +
-                            (extras.additionalDriver ? 5 : 0) +
-                            (extras.childSeat ? 3 : 0))
-                        return formatCurrency(extrasCost)
-                      })()}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Steuern & Gebühren</span>
-                    <span className="text-white">{formatCurrency(calculateTotal() * 0.13)}</span>
-                  </div>
-                  <div className="flex justify-between pt-2 border-t border-dark-600">
-                    <span className="text-white font-bold">Gesamt</span>
-                    <span className="text-white font-bold text-xl">
-                      {formatCurrency(calculateTotal())}
-                    </span>
-                  </div>
-                </>
-              )}
-            </div>
-            {currentStep === 'payment' && (
-              <button
-                onClick={handleConfirmBooking}
-                className="btn-primary w-full mt-6 text-lg py-4"
-              >
-                Bestätigen & Bezahlen
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-export default BookingFlowPage
-const normalizeImageUrl = (raw: string | undefined) => {
-  if (!raw) return ''
-  try {
-    const u = new URL(raw)
-    if (u.host === 'images.unsplash.com' && !u.searchParams.has('ixlib')) {
-      u.searchParams.set('ixlib', 'rb-4.0.3')
-      u.searchParams.set('auto', 'format')
-      u.searchParams.set('fit', 'crop')
-      if (!u.searchParams.has('w')) u.searchParams.set('w', '800')
-      if (!u.searchParams.has('q')) u.searchParams.set('q', '80')
-      return u.toString()
-    }
-    return raw
-  } catch {
-    return raw
-  }
-}

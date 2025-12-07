@@ -34,6 +34,9 @@ public class User extends BaseEntity {
 
     @Column(nullable = false)
     @Builder.Default
-    private boolean enabled = true;
+    private boolean enabled = false; // Standardmäßig deaktiviert, muss per E-Mail aktiviert werden
+
+    @Column(length = 64)
+    private String activationToken; // Token für Account-Aktivierung
 }
 

@@ -38,15 +38,18 @@ export class ApiClient {
         headers: {
           'Content-Type': 'application/json',
         },
+        withCredentials: true, // Wichtig: Session-Cookies mit jeder Anfrage senden
       }) as AxiosInstance | undefined)
     this.client = created || (axios as unknown as AxiosInstance)
 
-    // Request interceptor: Add auth token
+    // Request interceptor: Add auth token and credentials
     this.client.interceptors?.request?.use(config => {
       const token = localStorage.getItem('authToken')
       if (token) {
         config.headers.Authorization = `Basic ${token}`
       }
+      // Wichtig: Cookies (Session) mit jeder Anfrage senden
+      config.withCredentials = true
       return config
     })
 
@@ -150,6 +153,48 @@ export class ApiClient {
     return list.map(v => this.normalizeVehicle(v))
   }
 
+  async createVehicle(request: {
+    licensePlate: string
+    brand: string
+    model: string
+    type: VehicleType
+    year?: number
+    mileage: number
+    location: string
+    dailyPrice: number
+    imageUrl?: string
+    imageGallery?: string[]
+  }): Promise<Vehicle> {
+    const response = await this.client.post<Vehicle>('/vehicles', request)
+    return this.normalizeVehicle(response.data)
+  }
+
+  async updateVehicle(
+    id: number,
+    request: {
+      brand: string
+      model: string
+      type: VehicleType
+      year?: number
+      location: string
+      dailyPrice: number
+      imageUrl?: string
+      imageGallery?: string[]
+    }
+  ): Promise<Vehicle> {
+    const response = await this.client.put<Vehicle>(`/vehicles/${id}`, request)
+    return this.normalizeVehicle(response.data)
+  }
+
+  async setVehicleOutOfService(id: number): Promise<void> {
+    await this.client.put(`/vehicles/${id}/out-of-service`)
+  }
+
+  async updateVehicleLocation(id: number, location: string): Promise<Vehicle> {
+    const response = await this.client.patch<Vehicle>(`/vehicles/${id}/location`, { location })
+    return this.normalizeVehicle(response.data)
+  }
+
   // Bookings
   async createBooking(request: CreateBookingRequest): Promise<Booking> {
     const response = await this.client.post<Booking>('/bookings', request)
@@ -167,6 +212,39 @@ export class ApiClient {
   async getBookingHistory(customerId: number): Promise<Booking[]> {
     const response = await this.client.get<Booking[]>(`/bookings/customer/${customerId}`)
     return response.data
+  }
+
+  async getAllBookings(): Promise<Booking[]> {
+    const response = await this.client.get<Booking[]>('/bookings')
+    return Array.isArray(response.data) ? response.data : []
+  }
+
+  private normalizeCustomer(c: any): Customer {
+    const normalize = (val: unknown): string => {
+      if (val == null) return ''
+      if (typeof val === 'string') return val
+      if (typeof val === 'object' && val !== null && 'encryptedValue' in val)
+        return String((val as { encryptedValue?: string }).encryptedValue ? '[ENCRYPTED]' : '')
+      return String(val)
+    }
+    return {
+      id: c.id,
+      firstName: c.firstName,
+      lastName: c.lastName,
+      email: normalize(c.email),
+      phone: normalize(c.phone),
+      address: normalize(c.address),
+      driverLicenseNumber: normalize(c.driverLicenseNumber),
+      username: c.username,
+      createdAt: c.createdAt,
+      updatedAt: c.updatedAt,
+    } as Customer
+  }
+
+  async getAllCustomers(): Promise<Customer[]> {
+    const response = await this.client.get<Customer[]>('/customers')
+    const customers = Array.isArray(response.data) ? response.data : []
+    return customers.map(c => this.normalizeCustomer(c))
   }
 
   async getPickups(date: string): Promise<Booking[]> {
@@ -204,8 +282,8 @@ export class ApiClient {
   }
 
   // Customers
-  async registerCustomer(request: RegisterCustomerRequest): Promise<Customer> {
-    const response = await this.client.post<Customer>('/customers/register', request)
+  async registerCustomer(request: RegisterCustomerRequest): Promise<Customer | any> {
+    const response = await this.client.post<any>('/customers/register', request)
     return response.data
   }
 
@@ -258,8 +336,62 @@ export class ApiClient {
   }
 
   async getCustomerMe(): Promise<Customer> {
-    const response = await this.client.get<Customer>('/customers/me')
-    return response.data
+    try {
+      const response = await this.client.get<any>('/customers/me')
+      // Der Backend-Endpunkt gibt CustomerDetailsResponse zurück (nicht Customer)
+      // Wir müssen es in Customer umwandeln
+      const data = response.data
+      
+      // Debug: Log die Antwort
+      console.log('getCustomerMe raw response:', response)
+      console.log('getCustomerMe response.data:', data)
+      console.log('getCustomerMe data.id:', data?.id, 'type:', typeof data?.id)
+      
+      if (!data) {
+        console.error('No data in response:', response)
+        throw new Error('Keine Daten in der Serverantwort')
+      }
+      
+      // Prüfe verschiedene mögliche Formate
+      const id = data.id !== undefined && data.id !== null ? Number(data.id) : null
+      
+      if (id === null || isNaN(id)) {
+        console.error('Invalid or missing id:', data)
+        // Versuche alternative Felder
+        if (data.customerId) {
+          console.log('Found customerId instead of id:', data.customerId)
+          return {
+            id: Number(data.customerId),
+            firstName: data.firstName || '',
+            lastName: data.lastName || '',
+            email: data.email || '',
+            phone: data.phone || '',
+            address: data.address || '',
+            driverLicenseNumber: data.driverLicenseNumber || '',
+            username: data.username || '',
+            createdAt: data.createdAt || new Date().toISOString(),
+            updatedAt: data.updatedAt || new Date().toISOString(),
+          } as Customer
+        }
+        throw new Error('ID fehlt in der Serverantwort')
+      }
+      
+      return {
+        id: id,
+        firstName: data.firstName || '',
+        lastName: data.lastName || '',
+        email: data.email || '',
+        phone: data.phone || '',
+        address: data.address || '',
+        driverLicenseNumber: data.driverLicenseNumber || '',
+        username: data.username || '',
+        createdAt: data.createdAt || new Date().toISOString(),
+        updatedAt: data.updatedAt || new Date().toISOString(),
+      } as Customer
+    } catch (error) {
+      console.error('Error in getCustomerMe:', error)
+      throw error
+    }
   }
 
   async updateCustomer(id: number, request: UpdateCustomerRequest): Promise<Customer> {

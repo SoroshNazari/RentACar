@@ -17,6 +17,10 @@ const RegisterPage = () => {
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [activationInfo, setActivationInfo] = useState<{
+    token: string
+    link: string
+  } | null>(null)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -34,7 +38,7 @@ const RegisterPage = () => {
     setLoading(true)
 
     try {
-      await api.registerCustomer({
+      const response = await api.registerCustomer({
         username: formData.username,
         password: formData.password,
         firstName: formData.firstName,
@@ -44,12 +48,58 @@ const RegisterPage = () => {
         address: formData.address,
         driverLicenseNumber: formData.driverLicenseNumber,
       })
-      navigate('/login?registered=true')
+      
+      // Wenn Aktivierungstoken in der Antwort ist (für Entwicklung)
+      if ((response as any).activationToken) {
+        setActivationInfo({
+          token: (response as any).activationToken,
+          link: (response as any).activationLink || `/activate?token=${(response as any).activationToken}`
+        })
+      } else {
+        navigate('/login?registered=true')
+      }
     } catch (err: unknown) {
-      const e = err as { response?: { data?: { message?: string } } }
-      setError(
-        e.response?.data?.message || 'Registrierung fehlgeschlagen. Bitte versuche es erneut.'
-      )
+      const e = err as { 
+        response?: { 
+          data?: { 
+            message?: string
+            error?: string
+            details?: Record<string, string>
+          }
+          status?: number
+        }
+        message?: string
+      }
+      
+      // Extrahiere Fehlermeldung aus verschiedenen möglichen Strukturen
+      let errorMessage = 'Registrierung fehlgeschlagen. Bitte versuche es erneut.'
+      
+      if (e.response?.data) {
+        // Backend-Fehlerstruktur: { error: "...", details: {...} }
+        if (e.response.data.error) {
+          errorMessage = e.response.data.error
+          // Wenn es Validierungsfehler gibt, zeige Details an
+          if (e.response.data.details) {
+            const details = Object.entries(e.response.data.details)
+              .map(([field, msg]) => `${field}: ${msg}`)
+              .join(', ')
+            if (details) {
+              errorMessage += ` (${details})`
+            }
+          }
+        } else if (e.response.data.message) {
+          errorMessage = e.response.data.message
+        }
+      } else if (e.message) {
+        errorMessage = e.message
+      }
+      
+      // Spezielle Behandlung für Netzwerkfehler
+      if (e.response?.status === 0 || !e.response) {
+        errorMessage = 'Verbindungsfehler. Bitte überprüfen Sie, ob das Backend läuft.'
+      }
+      
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -70,12 +120,41 @@ const RegisterPage = () => {
         </div>
 
         <div className="card">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <div className="bg-red-500/10 border border-red-500 text-red-400 px-4 py-3 rounded-lg">
-                {error}
+          {activationInfo ? (
+            <div className="space-y-4">
+              <div className="bg-green-500/10 border border-green-500 text-green-400 px-4 py-3 rounded-lg">
+                <p className="font-semibold mb-2">Registrierung erfolgreich!</p>
+                <p className="text-sm mb-4">
+                  Da wir einen Dummy-E-Mail-Service verwenden, finden Sie hier Ihren Aktivierungstoken:
+                </p>
+                <div className="bg-dark-800 p-3 rounded mb-4">
+                  <p className="text-xs text-gray-400 mb-1">Aktivierungstoken:</p>
+                  <p className="text-sm font-mono break-all">{activationInfo.token}</p>
+                </div>
+                <div className="space-y-2">
+                  <a
+                    href={activationInfo.link}
+                    className="btn-primary w-full inline-block text-center"
+                  >
+                    Account jetzt aktivieren
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/login')}
+                    className="text-primary-500 hover:text-primary-400 underline text-sm w-full"
+                  >
+                    Später aktivieren
+                  </button>
+                </div>
               </div>
-            )}
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {error && (
+                <div className="bg-red-500/10 border border-red-500 text-red-400 px-4 py-3 rounded-lg">
+                  {error}
+                </div>
+              )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -236,44 +315,7 @@ const RegisterPage = () => {
               {loading ? 'Konto wird erstellt...' : 'Registrieren'}
             </button>
           </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-gray-200">
-              Bereits ein Konto?{' '}
-              <Link to="/login" className="text-primary-500 hover:text-primary-400 underline">
-                Anmelden
-              </Link>
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-export default RegisterPage
-
-              </label>
-              <input
-                id="confirmPassword"
-                type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                required
-                className="input-field"
-                aria-required="true"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Konto wird erstellt...' : 'Registrieren'}
-            </button>
-          </form>
+          )}
 
           <div className="mt-6 text-center">
             <p className="text-gray-200">

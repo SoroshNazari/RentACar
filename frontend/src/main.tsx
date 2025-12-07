@@ -11,14 +11,14 @@ if (!rootElement) {
 
 const root = ReactDOM.createRoot(rootElement)
 
-// StrictMode nur im Development für bessere Performance in Production
+// Definition der App mit Router
 const AppWithRouter = (
   <BrowserRouter>
     <App />
   </BrowserRouter>
 )
 
-// Check if we're in development mode
+// Typ-Definitionen für TypeScript, damit es nicht meckert
 interface ImportMetaEnv {
   DEV?: boolean
 }
@@ -27,34 +27,12 @@ interface ImportMeta {
   env?: ImportMetaEnv
 }
 
+// Prüfung, ob wir im Development-Modus sind
 const isDev =
   process.env.NODE_ENV === 'development' ||
-  (typeof import.meta !== 'undefined' && (import.meta as ImportMeta).env?.DEV)
+  (typeof import.meta !== 'undefined' && (import.meta as unknown as ImportMeta).env?.DEV)
 
-if (isDev) {
-  root.render(<React.StrictMode>{AppWithRouter}</React.StrictMode>)
-} else {
-  root.render(AppWithRouter)
-}
-
-  <BrowserRouter>
-    <App />
-  </BrowserRouter>
-)
-
-// Check if we're in development mode
-interface ImportMetaEnv {
-  DEV?: boolean
-}
-
-interface ImportMeta {
-  env?: ImportMetaEnv
-}
-
-const isDev =
-  process.env.NODE_ENV === 'development' ||
-  (typeof import.meta !== 'undefined' && (import.meta as ImportMeta).env?.DEV)
-
+// Rendering: StrictMode nur im Development
 if (isDev) {
   root.render(<React.StrictMode>{AppWithRouter}</React.StrictMode>)
 } else {

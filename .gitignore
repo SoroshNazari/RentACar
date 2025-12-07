@@ -87,3 +87,13 @@ pids
 # Temporary folders
 tmp/
 temp/
+
+# --- Database (H2) ---
+# Lock-Dateien nie committen (verhindert Zugriff)
+*.lock.db
+
+# Trace-Dateien (Logs) brauchen wir nicht im Repo
+*.trace.db
+
+# Anmerkung: .mv.db (die eigentlichen Daten) werden erlaubt,
+# damit das Team Demo-Daten hat.

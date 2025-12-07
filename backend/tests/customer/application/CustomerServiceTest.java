@@ -8,6 +8,7 @@ import de.rentacar.shared.domain.AuditService;
 import de.rentacar.shared.security.Role;
 import de.rentacar.shared.security.User;
 import de.rentacar.shared.security.UserRepository;
+import de.rentacar.shared.service.EmailService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -47,6 +48,9 @@ class CustomerServiceTest {
 
     @Mock
     private AuditService auditService;
+
+    @Mock
+    private EmailService emailService;
 
     @InjectMocks
     private CustomerService customerService;
@@ -88,6 +92,7 @@ class CustomerServiceTest {
         when(encryptionService.encrypt(anyString())).thenReturn("encrypted-value");
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(customerRepository.save(any(Customer.class))).thenReturn(savedCustomer);
+        doNothing().when(emailService).sendActivationEmail(anyString(), anyString());
 
         // When
         Customer result = customerService.registerCustomer(
@@ -104,6 +109,7 @@ class CustomerServiceTest {
         verify(userRepository).save(any(User.class));
         verify(customerRepository).save(any(Customer.class));
         verify(encryptionService, times(4)).encrypt(anyString());
+        verify(emailService).sendActivationEmail(anyString(), anyString());
         verify(auditService).logAction(anyString(), eq("CUSTOMER_REGISTERED"), anyString(), anyString(), anyString(), anyString());
     }
 

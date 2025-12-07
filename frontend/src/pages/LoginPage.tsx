@@ -1,25 +1,38 @@
-import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { api } from '@/services/api'
 
 const LoginPage = () => {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [infoMessage, setInfoMessage] = useState('')
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    // Prüft, ob eine Nachricht in der URL steht (z.B. vom Redirect)
+    const msg = searchParams.get('message')
+    if (msg === 'login_required') {
+      setInfoMessage('Bitte melde dich an, um fortzufahren.')
+    } else if (msg === 'registered') {
+      setInfoMessage('Registrierung erfolgreich! Du kannst dich jetzt anmelden.')
+    }
+  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    setInfoMessage('') // Info ausblenden beim Versuch
     setLoading(true)
 
     try {
       await api.login(username, password)
 
-      // Rollenbasierte Navigation
       const userRoles = api.getUserRoles()
-
+      // Wenn man von einer Buchung kam, könnte man hier zurückleiten
+      // Fürs Erste leiten wir Standardmäßig weiter:
       if (userRoles.includes('ROLE_ADMIN') || userRoles.includes('ROLE_EMPLOYEE')) {
         navigate('/employee')
       } else {
@@ -49,11 +62,20 @@ const LoginPage = () => {
 
         <div className="card">
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Fehlermeldung (Rot) */}
             {error && (
-              <div className="bg-red-500/10 border border-red-500 text-red-400 px-4 py-3 rounded-lg">
+              <div className="bg-red-500/10 border border-red-500 text-red-400 px-4 py-3 rounded-lg text-sm">
                 {error}
               </div>
             )}
+
+            {/* Info-Meldung (Gelb/Blau) */}
+            {infoMessage && (
+              <div className="bg-primary-500/10 border border-primary-500 text-primary-200 px-4 py-3 rounded-lg text-sm">
+                {infoMessage}
+              </div>
+            )}
+
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-gray-200 mb-2">
                 Benutzername
@@ -66,7 +88,6 @@ const LoginPage = () => {
                 required
                 className="input-field"
                 placeholder="Dein Benutzername"
-                aria-required="true"
               />
             </div>
             <div>
@@ -81,7 +102,6 @@ const LoginPage = () => {
                 required
                 className="input-field"
                 placeholder="Dein Passwort"
-                aria-required="true"
               />
             </div>
             <button
@@ -101,14 +121,6 @@ const LoginPage = () => {
               </Link>
             </p>
           </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-export default LoginPage
-
         </div>
       </div>
     </div>

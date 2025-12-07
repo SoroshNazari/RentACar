@@ -237,36 +237,3 @@ const EmployeeCheckinPage = () => {
 }
 
 export default EmployeeCheckinPage
-
-                  <textarea
-                    value={inputs[b.id]?.damageNotes || ''}
-                    onChange={e =>
-                      setInputs({
-                        ...inputs,
-                        [b.id]: {
-                          mileage: inputs[b.id]?.mileage || '',
-                          damagePresent: inputs[b.id]?.damagePresent || false,
-                          damageNotes: e.target.value,
-                          damageCost: inputs[b.id]?.damageCost || '',
-                        },
-                      })
-                    }
-                    className="input-field min-h-[80px]"
-                    placeholder="Kratzer, Dellen, Innenraum…"
-                  />
-                </div>
-              </div>
-              <div className="mt-4 flex justify-end">
-                <button className="btn-primary" onClick={() => handleCheckin(b)}>
-                  Check-in durchführen
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
-
-export default EmployeeCheckinPage

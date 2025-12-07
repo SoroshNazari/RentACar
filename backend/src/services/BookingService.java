@@ -259,6 +259,14 @@ public class BookingService {
         return bookingRepository.findByCustomerIdWithVehicle(customerId);
     }
 
+    /**
+     * Use Case: Alle Buchungen abrufen (für Mitarbeiter/Admin)
+     */
+    @Transactional(readOnly = true)
+    public List<Booking> getAllBookings() {
+        return bookingRepository.findAll();
+    }
+
     private void validateDateRange(LocalDate startDate, LocalDate endDate) {
         if (startDate == null || endDate == null) {
             throw new IllegalArgumentException("Datum darf nicht null sein");

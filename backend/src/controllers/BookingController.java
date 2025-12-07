@@ -82,6 +82,12 @@ public class BookingController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'ADMIN')") // Nur Mitarbeiter und Admin dürfen alle Buchungen sehen
+    public ResponseEntity<List<Booking>> getAllBookings() {
+        return ResponseEntity.ok(bookingService.getAllBookings());
+    }
+
     @GetMapping("/customer/{customerId}")
     @PreAuthorize("hasAnyRole('EMPLOYEE', 'ADMIN') or (hasRole('CUSTOMER') and #customerId == authentication.principal.id)") // CUSTOMER darf nur eigene Buchungen sehen
     public ResponseEntity<List<Booking>> getBookingHistory(@PathVariable Long customerId) {
