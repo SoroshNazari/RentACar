@@ -104,6 +104,20 @@ const VehicleListPage = () => {
     return labels[type] || type
   }
 
+  // Zentraler Handler für Klicks auf Fahrzeuge (prüft Login)
+  const handleVehicleClick = (vehicleId: number) => {
+    const token = localStorage.getItem('token') // Prüfen, ob User eingeloggt ist
+
+    if (!token) {
+      // Nicht eingeloggt -> Redirect zum Login mit Nachricht
+      navigate('/login?message=login_required')
+      return
+    }
+
+    // Eingeloggt -> Weiter zum Fahrzeug
+    navigate(`/vehicle/${vehicleId}`)
+  }
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-12">
@@ -149,7 +163,7 @@ const VehicleListPage = () => {
             <div
               key={vehicle.id}
               className="card hover:border-primary-600 transition-colors cursor-pointer"
-              onClick={() => navigate(`/vehicle/${vehicle.id}`)}
+              onClick={() => handleVehicleClick(vehicle.id)}
             >
               <div className="aspect-video bg-dark-700 rounded-lg mb-4 overflow-hidden">
                 {(() => {
@@ -214,7 +228,7 @@ const VehicleListPage = () => {
               <button
                 onClick={e => {
                   e.stopPropagation()
-                  navigate(`/vehicle/${vehicle.id}`)
+                  handleVehicleClick(vehicle.id)
                 }}
                 className="btn-primary w-full"
               >
